@@ -865,7 +865,7 @@ Table of Contents
 
    This ciphersuite uses ristretto255 for the Group and SHA-512 for the
    Hash function.  The value of the contextString parameter is "FROST-
-   ristretto255-SHA512".
+   RISTRETTO255-SHA512".
 
    *  Group: ristretto255 [RISTRETTO]
 
