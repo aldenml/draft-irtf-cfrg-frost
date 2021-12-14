@@ -96,6 +96,7 @@ Table of Contents
      8.3.  Aggregate
    9.  Ciphersuites
      9.1.  FROST(ristretto255, SHA-512)
+     9.2.  FROST(P-256, SHA-256)
    10. Security Considerations
      10.1.  Nonce Reuse Attacks
      10.2.  Protocol Failures
@@ -377,13 +378,16 @@ Table of Contents
    Using H, we introduce two separate domain-separated hashes, H1 and
    H2, where they are domain separated.  These hash functions differ per
    parameter set, so H1 and H2 will differ between instantiations of the
-   protocol, for example:
+   protocol as follows:
 
-   H1(m) = H("FROST-RISTRETTO-SHA512" || "rho" || len(m) || m)
+   H1(m) = H(contextString || "rho" || len(m) || m)
 
    and
 
-   H2(m) = H("FROST-RISTRETTO-SHA512" || "chal" || len(m) || m)
+   H2(m) = H(contextString || "chal" || len(m) || m)
+
+   The variable contextString is unique for each ciphersuite defined in
+   Section 9.
 
 7.  Helper functions
 
@@ -859,6 +863,10 @@ Table of Contents
 
 9.1.  FROST(ristretto255, SHA-512)
 
+   This ciphersuite uses ristretto255 for the Group and SHA-512 for the
+   Hash function.  The value of the contextString parameter is "FROST-
+   RISTRETTO255-SHA512".
+
    *  Group: ristretto255 [RISTRETTO]
 
       -  HashToGroup(): Use hash_to_ristretto255
@@ -877,6 +885,27 @@ Table of Contents
          are fully reduced modulo Order() and in little-endian order.
 
    *  Hash: SHA-512, and Nh = 64.
+
+9.2.  FROST(P-256, SHA-256)
+
+   This ciphersuite uses P-256 for the Group and SHA-256 for the Hash
+   function.  The value of the contextString parameter is "FROST-
+   P256-SHA256".
+
+   *  Group: P-256 (secp256r1) [x9.62]
+
+      -  HashToGroup(): Use hash_to_curve with suite P256_XMD:SHA-
+         256_SSWU_RO_ [I-D.irtf-cfrg-hash-to-curve] and DST =
+         "HashToGroup-" || contextString.
+
+      -  HashToScalar(): Use hash_to_field from
+         [I-D.irtf-cfrg-hash-to-curve] using L = 48, expand_message_xmd
+         with SHA-256, DST = "HashToScalar-" || contextString, and prime
+         modulus equal to Order().
+
+      -  Serialization: Elements are serialized as Ne = 33 byte string
+
+   *  Hash: SHA-256, and Nh = 32.
 
 10.  Security Considerations
 
@@ -973,6 +1002,10 @@ Table of Contents
               irtf-cfrg-ristretto255-decaf448-01, 4 August 2021,
               <https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-
               ristretto255-decaf448-01>.
+
+   [x9.62]    ANSI, "Public Key Cryptography for the Financial Services
+              Industry: the Elliptic Curve Digital Signature Algorithm
+              (ECDSA)", ANSI X9.62-1998, September 1998.
 
 12.2.  Informative References
 

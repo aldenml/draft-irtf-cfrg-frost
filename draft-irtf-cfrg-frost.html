@@ -1216,6 +1216,9 @@ participant is malicious.<a href="#section-abstract-1" class="pilcrow">¶</a></p
 <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.9.2.1">
                 <p id="section-toc.1-1.9.2.1.1"><a href="#section-9.1" class="xref">9.1</a>.  <a href="#name-frostristretto255-sha-512" class="xref">FROST(ristretto255, SHA-512)</a></p>
 </li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.9.2.2">
+                <p id="section-toc.1-1.9.2.2.1"><a href="#section-9.2" class="xref">9.2</a>.  <a href="#name-frostp-256-sha-256" class="xref">FROST(P-256, SHA-256)</a></p>
+</li>
             </ul>
 </li>
           <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.10">
@@ -1540,18 +1543,19 @@ recommendations on hash functions which SHOULD BE used in practice, see
 <a href="#ciphersuites" class="xref">Section 9</a>.<a href="#section-6.2-1" class="pilcrow">¶</a></p>
 <p id="section-6.2-2">Using H, we introduce two separate domain-separated hashes, H1 and H2, where they are
 domain separated. These hash functions differ per parameter set, so H1 and H2 will
-differ between instantiations of the protocol, for example:<a href="#section-6.2-2" class="pilcrow">¶</a></p>
+differ between instantiations of the protocol as follows:<a href="#section-6.2-2" class="pilcrow">¶</a></p>
 <div class="alignLeft art-text artwork" id="section-6.2-3">
 <pre>
-H1(m) = H("FROST-RISTRETTO-SHA512" || "rho" || len(m) || m)
+H1(m) = H(contextString || "rho" || len(m) || m)
 </pre><a href="#section-6.2-3" class="pilcrow">¶</a>
 </div>
 <p id="section-6.2-4">and<a href="#section-6.2-4" class="pilcrow">¶</a></p>
 <div class="alignLeft art-text artwork" id="section-6.2-5">
 <pre>
-H2(m) = H("FROST-RISTRETTO-SHA512" || "chal" || len(m) || m)
+H2(m) = H(contextString || "chal" || len(m) || m)
 </pre><a href="#section-6.2-5" class="pilcrow">¶</a>
 </div>
+<p id="section-6.2-6">The variable contextString is unique for each ciphersuite defined in <a href="#ciphersuites" class="xref">Section 9</a>.<a href="#section-6.2-6" class="pilcrow">¶</a></p>
 </section>
 </div>
 </section>
@@ -2132,28 +2136,59 @@ The RECOMMENDED ciphersuite is (ristretto255, SHA-512) <a href="#recommended-sui
         <h3 id="name-frostristretto255-sha-512">
 <a href="#section-9.1" class="section-number selfRef">9.1. </a><a href="#name-frostristretto255-sha-512" class="section-name selfRef">FROST(ristretto255, SHA-512)</a>
         </h3>
+<p id="section-9.1-1">This ciphersuite uses ristretto255 for the Group and SHA-512 for the Hash function.
+The value of the contextString parameter is "FROST-RISTRETTO255-SHA512".<a href="#section-9.1-1" class="pilcrow">¶</a></p>
 <ul class="normal">
-<li class="normal" id="section-9.1-1.1">
-            <p id="section-9.1-1.1.1">Group: ristretto255 <span>[<a href="#RISTRETTO" class="xref">RISTRETTO</a>]</span><a href="#section-9.1-1.1.1" class="pilcrow">¶</a></p>
+<li class="normal" id="section-9.1-2.1">
+            <p id="section-9.1-2.1.1">Group: ristretto255 <span>[<a href="#RISTRETTO" class="xref">RISTRETTO</a>]</span><a href="#section-9.1-2.1.1" class="pilcrow">¶</a></p>
 <ul class="normal">
-<li class="normal" id="section-9.1-1.1.2.1">HashToGroup(): Use hash_to_ristretto255
+<li class="normal" id="section-9.1-2.1.2.1">HashToGroup(): Use hash_to_ristretto255
 <span>[<a href="#I-D.irtf-cfrg-hash-to-curve" class="xref">I-D.irtf-cfrg-hash-to-curve</a>]</span> with DST =
 "HashToGroup-" || contextString, and <code>expand_message</code> = <code>expand_message_xmd</code>
-using SHA-512.<a href="#section-9.1-1.1.2.1" class="pilcrow">¶</a>
+using SHA-512.<a href="#section-9.1-2.1.2.1" class="pilcrow">¶</a>
 </li>
-              <li class="normal" id="section-9.1-1.1.2.2">HashToScalar(): Compute <code>uniform_bytes</code> using <code>expand_message</code> = <code>expand_message_xmd</code>,
+              <li class="normal" id="section-9.1-2.1.2.2">HashToScalar(): Compute <code>uniform_bytes</code> using <code>expand_message</code> = <code>expand_message_xmd</code>,
 DST = "HashToScalar-" || contextString, and output length 64, interpret
 <code>uniform_bytes</code> as a 512-bit integer in little-endian order, and reduce the integer
-modulo <code>Order()</code>.<a href="#section-9.1-1.1.2.2" class="pilcrow">¶</a>
+modulo <code>Order()</code>.<a href="#section-9.1-2.1.2.2" class="pilcrow">¶</a>
 </li>
-              <li class="normal" id="section-9.1-1.1.2.3">Serialization: Both group elements and scalars are encoded in Ne = Ns = 32
+              <li class="normal" id="section-9.1-2.1.2.3">Serialization: Both group elements and scalars are encoded in Ne = Ns = 32
 bytes. For group elements, use the 'Encode' and 'Decode' functions from
 <span>[<a href="#RISTRETTO" class="xref">RISTRETTO</a>]</span>. For scalars, ensure they are fully reduced modulo <code>Order()</code>
-and in little-endian order.<a href="#section-9.1-1.1.2.3" class="pilcrow">¶</a>
+and in little-endian order.<a href="#section-9.1-2.1.2.3" class="pilcrow">¶</a>
 </li>
             </ul>
 </li>
-          <li class="normal" id="section-9.1-1.2">Hash: SHA-512, and Nh = 64.<a href="#section-9.1-1.2" class="pilcrow">¶</a>
+          <li class="normal" id="section-9.1-2.2">Hash: SHA-512, and Nh = 64.<a href="#section-9.1-2.2" class="pilcrow">¶</a>
+</li>
+        </ul>
+</section>
+</div>
+<div id="frostp-256-sha-256">
+<section id="section-9.2">
+        <h3 id="name-frostp-256-sha-256">
+<a href="#section-9.2" class="section-number selfRef">9.2. </a><a href="#name-frostp-256-sha-256" class="section-name selfRef">FROST(P-256, SHA-256)</a>
+        </h3>
+<p id="section-9.2-1">This ciphersuite uses P-256 for the Group and SHA-256 for the Hash function.
+The value of the contextString parameter is "FROST-P256-SHA256".<a href="#section-9.2-1" class="pilcrow">¶</a></p>
+<ul class="normal">
+<li class="normal" id="section-9.2-2.1">
+            <p id="section-9.2-2.1.1">Group: P-256 (secp256r1) <span>[<a href="#x9.62" class="xref">x9.62</a>]</span><a href="#section-9.2-2.1.1" class="pilcrow">¶</a></p>
+<ul class="normal">
+<li class="normal" id="section-9.2-2.1.2.1">HashToGroup(): Use hash_to_curve with suite P256_XMD:SHA-256_SSWU_RO_
+<span>[<a href="#I-D.irtf-cfrg-hash-to-curve" class="xref">I-D.irtf-cfrg-hash-to-curve</a>]</span> and DST =
+"HashToGroup-" || contextString.<a href="#section-9.2-2.1.2.1" class="pilcrow">¶</a>
+</li>
+              <li class="normal" id="section-9.2-2.1.2.2">HashToScalar(): Use hash_to_field from <span>[<a href="#I-D.irtf-cfrg-hash-to-curve" class="xref">I-D.irtf-cfrg-hash-to-curve</a>]</span>
+using L = 48, <code>expand_message_xmd</code> with SHA-256,
+DST = "HashToScalar-" || contextString, and
+prime modulus equal to <code>Order()</code>.<a href="#section-9.2-2.1.2.2" class="pilcrow">¶</a>
+</li>
+              <li class="normal" id="section-9.2-2.1.2.3">Serialization: Elements are serialized as Ne = 33 byte string<a href="#section-9.2-2.1.2.3" class="pilcrow">¶</a>
+</li>
+            </ul>
+</li>
+          <li class="normal" id="section-9.2-2.2">Hash: SHA-256, and Nh = 32.<a href="#section-9.2-2.2" class="pilcrow">¶</a>
 </li>
         </ul>
 </section>
@@ -2265,8 +2300,12 @@ channel can be used to facilitate key generation and signing.<a href="#section-1
 <span class="refAuthor">Leiba, B.</span>, <span class="refTitle">"Ambiguity of Uppercase vs Lowercase in RFC 2119 Key Words"</span>, <span class="seriesInfo">BCP 14</span>, <span class="seriesInfo">RFC 8174</span>, <span class="seriesInfo">DOI 10.17487/RFC8174</span>, <time datetime="2017-05" class="refDate">May 2017</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc8174">https://www.rfc-editor.org/rfc/rfc8174</a>&gt;</span>. </dd>
 <dd class="break"></dd>
 <dt id="RISTRETTO">[RISTRETTO]</dt>
-      <dd>
+        <dd>
 <span class="refAuthor">Valence, H. D.</span>, <span class="refAuthor">Grigg, J.</span>, <span class="refAuthor">Tankersley, G.</span>, <span class="refAuthor">Valsorda, F.</span>, <span class="refAuthor">Lovecruft, I.</span>, and <span class="refAuthor">M. Hamburg</span>, <span class="refTitle">"The ristretto255 and decaf448 Groups"</span>, <span class="refContent">Work in Progress</span>, <span class="seriesInfo">Internet-Draft, draft-irtf-cfrg-ristretto255-decaf448-01</span>, <time datetime="2021-08-04" class="refDate">4 August 2021</time>, <span>&lt;<a href="https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-ristretto255-decaf448-01">https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-ristretto255-decaf448-01</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="x9.62">[x9.62]</dt>
+      <dd>
+<span class="refAuthor">ANSI</span>, <span class="refTitle">"Public Key Cryptography for the Financial Services Industry: the Elliptic Curve Digital Signature Algorithm (ECDSA)"</span>, <span class="seriesInfo">ANSI X9.62-1998</span>, <time datetime="1998-09" class="refDate">September 1998</time>. </dd>
 <dd class="break"></dd>
 </dl>
 </section>
