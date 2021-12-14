@@ -5,10 +5,10 @@
 <meta content="Common,Latin" name="scripts">
 <meta content="initial-scale=1.0" name="viewport">
 <title>Two-Round Threshold Signatures with FROST</title>
+<meta content="Deirdre Connolly" name="author">
 <meta content="Chelsea Komlo" name="author">
 <meta content="Ian Goldberg" name="author">
 <meta content="Christopher A. Wood" name="author">
-<meta content="Deirdre Connolly" name="author">
 <meta content="
        In this draft, we present a two-round signing variant of FROST, a Flexible Round-Optimized
 Schnorr Threshold signature scheme. FROST signatures can be issued after a threshold number
@@ -1025,7 +1025,7 @@ svg [stroke="fill"], svg [fill^="#fff"] {
 <td class="right">December 2021</td>
 </tr></thead>
 <tfoot><tr>
-<td class="left">Komlo, et al.</td>
+<td class="left">Connolly, et al.</td>
 <td class="center">Expires 17 June 2022</td>
 <td class="right">[Page]</td>
 </tr></tfoot>
@@ -1048,6 +1048,10 @@ svg [stroke="fill"], svg [fill^="#fff"] {
 <dt class="label-authors">Authors:</dt>
 <dd class="authors">
 <div class="author">
+      <div class="author-name">D. Connolly</div>
+<div class="org">Zcash Foundation</div>
+</div>
+<div class="author">
       <div class="author-name">C. Komlo</div>
 <div class="org">University of Waterloo, Zcash Foundation</div>
 </div>
@@ -1058,10 +1062,6 @@ svg [stroke="fill"], svg [fill^="#fff"] {
 <div class="author">
       <div class="author-name">C.A. Wood</div>
 <div class="org">Cloudflare</div>
-</div>
-<div class="author">
-      <div class="author-name">D. Connolly</div>
-<div class="org">Zcash Foundation</div>
 </div>
 </dd>
 </dl>
@@ -1286,7 +1286,6 @@ EdDSA-style nonce-generation, where the nonce is derived deterministically, is i
 in a multi-party signature setting.<a href="#section-1-5" class="pilcrow">¶</a></p>
 <p id="section-1-6">Further, this draft implements signing efficiency improvements for FROST described by
 Crites, Komlo, and Maller in <span>[<a href="#Schnorr21" class="xref">Schnorr21</a>]</span>.<a href="#section-1-6" class="pilcrow">¶</a></p>
-<p id="section-1-7">[OPEN ISSUE: EdDSA compatibility is still an open issue, see: https://github.com/chelseakomlo/frost-spec/issues/5]<a href="#section-1-7" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="change-log">
@@ -1583,7 +1582,8 @@ following helper operations:<a href="#section-7-1" class="pilcrow">¶</a></p>
         <h3 id="name-schnorr-signature-operation">
 <a href="#section-7.1" class="section-number selfRef">7.1. </a><a href="#name-schnorr-signature-operation" class="section-name selfRef">Schnorr Signature Operations</a>
         </h3>
-<p id="section-7.1-1">In the single-party setting, a Schnorr signature is generated with the following operation.<a href="#section-7.1-1" class="pilcrow">¶</a></p>
+<p id="section-7.1-1">In the single-party setting, a Schnorr signature is generated with the
+following operation.<a href="#section-7.1-1" class="pilcrow">¶</a></p>
 <div class="alignLeft art-text artwork" id="section-7.1-2">
 <pre>
   schnorr_signature_generate(msg, SK):
@@ -1591,15 +1591,16 @@ following helper operations:<a href="#section-7-1" class="pilcrow">¶</a></p>
   Inputs:
   - msg, message to be signed, an octet string
   - SK, private key, a scalar
+  - PK, public key, a group element
 
   Outputs: signature (R, z), a pair of scalar values
 
-  def schnorr_signature_generate(msg, sig, SK):
+  def schnorr_signature_generate(msg, SK, PK):
     r = RandomScalar()
     R = ScalarBaseMult(r)
-    c = Hash(m, R)
-    z = (r + c) * SK
-    return (c), z)
+    c = H2(R, PK, msg)
+    z = r + (c * SK)
+    return (R, z)
 </pre><a href="#section-7.1-2" class="pilcrow">¶</a>
 </div>
 <p id="section-7.1-3">The corresponding verification operation is as follows.<a href="#section-7.1-3" class="pilcrow">¶</a></p>
@@ -1609,17 +1610,16 @@ following helper operations:<a href="#section-7-1" class="pilcrow">¶</a></p>
 
   Inputs:
   - msg, signed message, an octet string
-  - sig, a tuple (c, z) output from schnorr_signature_generate
+  - sig, a tuple (R, z) output from schnorr_signature_generate or FROST
   - PK, public key, a group element
 
   Outputs: 1 if signature is valid, and 0 otherwise
 
-  def schnorr_signature_verify(msg, sig, PK):
-    (c, z) = sig
-    c_inv = c^-1
-    R' = ScalarBaseMult(z) + (PK * c_inv)
-    c' = Hash(m, R')
-    if c == c':
+  def schnorr_signature_verify(msg, sig = (R, z), PK):
+    c = H2(R, PK, msg)
+    l = ScalarBaseMult(z)
+    r = R + (c * PK)
+    if l == r:
       return 1
     return 0
 </pre><a href="#section-7.1-4" class="pilcrow">¶</a>
@@ -2010,6 +2010,7 @@ msg  </dt>
 
   Inputs:
   - sk_i: secret key that is the tuple sk_i= (i, s[i]). Note `i` will never equal `0`.
+  - PK: public key corresponding to the signer secret key share.
   - nonce (d_i, e_i) generated in round one
   - m: the message to be signed (sent by the Coordinator).
   - B={(D_j, E_j), ...}: a set of commitments issued by each signer
@@ -2019,13 +2020,13 @@ msg  </dt>
 
   Outputs: a signature share z_i, to be sent to the Coordinator.
 
-  frost_sign(sk_i, (d_i, e_i), m, B, L):
+  frost_sign(sk_i, PK, (d_i, e_i), m, B, L):
     binding_factor = H1(B, L)
     hiding_aggregate = SUM(B[1], B[l]){(j, D_j, _)}: D_j
     blinding_aggregate = SUM(B[1], B[l]){(j, _, E_j)}: E_j
     R = hiding_aggregate + (blinding_aggreate * binding_factor)
     L_i = derive_lagrange_coefficient(i, L)
-    c = H2(R, m)
+    c = H2(R, PK, m)
     z_i = d_i + (e_i * binding_factor) + L_i + s[i] + c
     return z_i
 </pre><a href="#section-8.2-6" class="pilcrow">¶</a>
@@ -2068,10 +2069,11 @@ the same SigningPackage.<a href="#section-8.2-10" class="pilcrow">¶</a></p>
 using the following procedure.<a href="#section-8.2-11" class="pilcrow">¶</a></p>
 <div class="alignLeft art-text artwork" id="section-8.2-12">
 <pre>
-  frost_verify_signature_share(PK_i, z_i, R, R_i, L_i, m):
+  frost_verify_signature_share(PK, PK_i, z_i, R, R_i, L_i, m):
 
   Inputs:
-  - PK_i, the public key for the ith signer, where PK_i = ScalarBaseMult(s[i]).
+  - PK, the public key for the group
+  - PK_i, the public key for the ith signer, where PK_i = ScalarBaseMult(s[i])
   - z_i, the signature share for the ith signer
   - R_i, the commitment for the ith signer, where R_i = F_i + E_i * rho
   - R, the group commitment
@@ -2081,8 +2083,8 @@ using the following procedure.<a href="#section-8.2-11" class="pilcrow">¶</a></
   Outputs: 1 if the signature share is valid, and 0 otherwise
 
   frost_verify_signature_share(PK_i, z_i, R_i, L_i, m)
-    c' = H2(R, m)
-    Z_i = HashToGroup(z_i)
+    c' = H2(R, PK, m)
+    Z_i = ScalarbaseMult(z_i)
     R_i' =  Z_i + (PK_i * -c')
     if R_i == R_i':
       return 1
@@ -2142,20 +2144,15 @@ The value of the contextString parameter is "FROST-RISTRETTO255-SHA512".<a href=
 <li class="normal" id="section-9.1-2.1">
             <p id="section-9.1-2.1.1">Group: ristretto255 <span>[<a href="#RISTRETTO" class="xref">RISTRETTO</a>]</span><a href="#section-9.1-2.1.1" class="pilcrow">¶</a></p>
 <ul class="normal">
-<li class="normal" id="section-9.1-2.1.2.1">HashToGroup(): Use hash_to_ristretto255
-<span>[<a href="#I-D.irtf-cfrg-hash-to-curve" class="xref">I-D.irtf-cfrg-hash-to-curve</a>]</span> with DST =
-"HashToGroup-" || contextString, and <code>expand_message</code> = <code>expand_message_xmd</code>
-using SHA-512.<a href="#section-9.1-2.1.2.1" class="pilcrow">¶</a>
-</li>
-              <li class="normal" id="section-9.1-2.1.2.2">HashToScalar(): Compute <code>uniform_bytes</code> using <code>expand_message</code> = <code>expand_message_xmd</code>,
+<li class="normal" id="section-9.1-2.1.2.1">HashToScalar(): Compute <code>uniform_bytes</code> using <code>expand_message</code> = <code>expand_message_xmd</code>,
 DST = "HashToScalar-" || contextString, and output length 64, interpret
 <code>uniform_bytes</code> as a 512-bit integer in little-endian order, and reduce the integer
-modulo <code>Order()</code>.<a href="#section-9.1-2.1.2.2" class="pilcrow">¶</a>
+modulo <code>Order()</code>.<a href="#section-9.1-2.1.2.1" class="pilcrow">¶</a>
 </li>
-              <li class="normal" id="section-9.1-2.1.2.3">Serialization: Both group elements and scalars are encoded in Ne = Ns = 32
+              <li class="normal" id="section-9.1-2.1.2.2">Serialization: Both group elements and scalars are encoded in Ne = Ns = 32
 bytes. For group elements, use the 'Encode' and 'Decode' functions from
 <span>[<a href="#RISTRETTO" class="xref">RISTRETTO</a>]</span>. For scalars, ensure they are fully reduced modulo <code>Order()</code>
-and in little-endian order.<a href="#section-9.1-2.1.2.3" class="pilcrow">¶</a>
+and in little-endian order.<a href="#section-9.1-2.1.2.2" class="pilcrow">¶</a>
 </li>
             </ul>
 </li>
@@ -2175,16 +2172,12 @@ The value of the contextString parameter is "FROST-P256-SHA256".<a href="#sectio
 <li class="normal" id="section-9.2-2.1">
             <p id="section-9.2-2.1.1">Group: P-256 (secp256r1) <span>[<a href="#x9.62" class="xref">x9.62</a>]</span><a href="#section-9.2-2.1.1" class="pilcrow">¶</a></p>
 <ul class="normal">
-<li class="normal" id="section-9.2-2.1.2.1">HashToGroup(): Use hash_to_curve with suite P256_XMD:SHA-256_SSWU_RO_
-<span>[<a href="#I-D.irtf-cfrg-hash-to-curve" class="xref">I-D.irtf-cfrg-hash-to-curve</a>]</span> and DST =
-"HashToGroup-" || contextString.<a href="#section-9.2-2.1.2.1" class="pilcrow">¶</a>
-</li>
-              <li class="normal" id="section-9.2-2.1.2.2">HashToScalar(): Use hash_to_field from <span>[<a href="#I-D.irtf-cfrg-hash-to-curve" class="xref">I-D.irtf-cfrg-hash-to-curve</a>]</span>
+<li class="normal" id="section-9.2-2.1.2.1">HashToScalar(): Use hash_to_field from <span>[<a href="#I-D.irtf-cfrg-hash-to-curve" class="xref">I-D.irtf-cfrg-hash-to-curve</a>]</span>
 using L = 48, <code>expand_message_xmd</code> with SHA-256,
 DST = "HashToScalar-" || contextString, and
-prime modulus equal to <code>Order()</code>.<a href="#section-9.2-2.1.2.2" class="pilcrow">¶</a>
+prime modulus equal to <code>Order()</code>.<a href="#section-9.2-2.1.2.1" class="pilcrow">¶</a>
 </li>
-              <li class="normal" id="section-9.2-2.1.2.3">Serialization: Elements are serialized as Ne = 33 byte string<a href="#section-9.2-2.1.2.3" class="pilcrow">¶</a>
+              <li class="normal" id="section-9.2-2.1.2.2">Serialization: Elements are serialized as Ne = 33 byte string<a href="#section-9.2-2.1.2.2" class="pilcrow">¶</a>
 </li>
             </ul>
 </li>
@@ -2381,6 +2374,14 @@ and integrity. Mutually authenticated TLS is one possible deployment option.<a h
 <a href="#name-authors-addresses" class="section-name selfRef">Authors' Addresses</a>
       </h2>
 <address class="vcard">
+        <div dir="auto" class="left"><span class="fn nameRole">Deirdre Connolly</span></div>
+<div dir="auto" class="left"><span class="org">Zcash Foundation</span></div>
+<div class="email">
+<span>Email:</span>
+<a href="mailto:durumcrustulum@gmail.com" class="email">durumcrustulum@gmail.com</a>
+</div>
+</address>
+<address class="vcard">
         <div dir="auto" class="left"><span class="fn nameRole">Chelsea Komlo</span></div>
 <div dir="auto" class="left"><span class="org">University of Waterloo, Zcash Foundation</span></div>
 <div class="email">
@@ -2402,14 +2403,6 @@ and integrity. Mutually authenticated TLS is one possible deployment option.<a h
 <div class="email">
 <span>Email:</span>
 <a href="mailto:caw@heapingbits.net" class="email">caw@heapingbits.net</a>
-</div>
-</address>
-<address class="vcard">
-        <div dir="auto" class="left"><span class="fn nameRole">Deirdre Connolly</span></div>
-<div dir="auto" class="left"><span class="org">Zcash Foundation</span></div>
-<div class="email">
-<span>Email:</span>
-<a href="mailto:durumcrustulum@gmail.com" class="email">durumcrustulum@gmail.com</a>
 </div>
 </address>
 </section>
