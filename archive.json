@@ -1,6 +1,6 @@
 {
   "magic": "E!vIA5L86J2I",
-  "timestamp": "2021-12-14T00:03:59.268291+00:00",
+  "timestamp": "2021-12-16T00:04:15.758295+00:00",
   "repo": "chelseakomlo/draft-irtf-cfrg-frost",
   "labels": [
     {
@@ -86,7 +86,7 @@
       "id": "I_kwDOEpUZs84-1lXn",
       "title": "Add P-256 ciphersuite",
       "url": "https://github.com/chelseakomlo/draft-irtf-cfrg-frost/issues/11",
-      "state": "OPEN",
+      "state": "CLOSED",
       "author": "chris-wood",
       "authorAssociation": "COLLABORATOR",
       "assignees": [],
@@ -95,8 +95,8 @@
       ],
       "body": "",
       "createdAt": "2021-11-15T23:14:32Z",
-      "updatedAt": "2021-12-13T23:32:07Z",
-      "closedAt": null,
+      "updatedAt": "2021-12-14T14:56:00Z",
+      "closedAt": "2021-12-14T14:56:00Z",
       "comments": []
     },
     {
@@ -321,15 +321,25 @@
       "state": "OPEN",
       "author": "chelseakomlo",
       "authorAssociation": "OWNER",
-      "assignees": [],
+      "assignees": [
+        "dconnolly"
+      ],
       "labels": [
         "interop"
       ],
       "body": "",
       "createdAt": "2021-11-15T23:45:43Z",
-      "updatedAt": "2021-12-13T23:32:07Z",
+      "updatedAt": "2021-12-14T00:10:19Z",
       "closedAt": null,
-      "comments": []
+      "comments": [
+        {
+          "author": "dconnolly",
+          "authorAssociation": "COLLABORATOR",
+          "body": "I have another FROST on Ristretto impl ready, I will commence interop testing with `frost-dalek`",
+          "createdAt": "2021-12-14T00:10:19Z",
+          "updatedAt": "2021-12-14T00:10:19Z"
+        }
+      ]
     },
     {
       "number": 23,
@@ -354,7 +364,7 @@
       "id": "I_kwDOEpUZs84-1ti5",
       "title": "Specify verification",
       "url": "https://github.com/chelseakomlo/draft-irtf-cfrg-frost/issues/24",
-      "state": "OPEN",
+      "state": "CLOSED",
       "author": "chelseakomlo",
       "authorAssociation": "OWNER",
       "assignees": [
@@ -363,8 +373,8 @@
       "labels": [],
       "body": "Specify with `(R, z)` and also how parameters are used within the verification algorithm",
       "createdAt": "2021-11-15T23:53:02Z",
-      "updatedAt": "2021-12-13T23:57:27Z",
-      "closedAt": null,
+      "updatedAt": "2021-12-14T21:11:44Z",
+      "closedAt": "2021-12-14T21:11:44Z",
       "comments": [
         {
           "author": "chelseakomlo",
@@ -379,6 +389,20 @@
           "body": "This may require changing the signing procedures such that the output signatures are of the form `(R, z)` (commitment based, where the challenge is rederived).",
           "createdAt": "2021-12-13T23:56:53Z",
           "updatedAt": "2021-12-13T23:56:53Z"
+        },
+        {
+          "author": "chris-wood",
+          "authorAssociation": "COLLABORATOR",
+          "body": "@chelseakomlo can we close this now that #34 is merged?",
+          "createdAt": "2021-12-14T20:56:04Z",
+          "updatedAt": "2021-12-14T20:56:20Z"
+        },
+        {
+          "author": "chelseakomlo",
+          "authorAssociation": "OWNER",
+          "body": "Yes, thanks for flagging. Closed by #34\r\n",
+          "createdAt": "2021-12-14T21:11:44Z",
+          "updatedAt": "2021-12-14T21:11:44Z"
         }
       ]
     },
@@ -393,10 +417,12 @@
       "assignees": [
         "chelseakomlo"
       ],
-      "labels": [],
+      "labels": [
+        "design"
+      ],
       "body": "Vs having a single explicit aggregator:\r\n\r\n![image](https://user-images.githubusercontent.com/552961/141872069-a9d80b4d-094d-4159-8006-0de1843bc0ed.png)\r\n\r\nTo me this assumes some other trust level amongst the signing participants if they are allowed to self-verify its own signature before outputting it.",
       "createdAt": "2021-11-15T23:56:46Z",
-      "updatedAt": "2021-11-16T00:17:54Z",
+      "updatedAt": "2021-12-15T20:56:27Z",
       "closedAt": null,
       "comments": [
         {
@@ -1108,24 +1134,26 @@
       "id": "PR_kwDOEpUZs84vysgi",
       "title": "Add P256-SHA-256 ciphersuite",
       "url": "https://github.com/chelseakomlo/draft-irtf-cfrg-frost/pull/32",
-      "state": "OPEN",
+      "state": "MERGED",
       "author": "dconnolly",
       "authorAssociation": "COLLABORATOR",
       "assignees": [],
       "labels": [],
       "body": "To match the Ristretto ciphersuite as it exists",
       "createdAt": "2021-12-13T23:55:37Z",
-      "updatedAt": "2021-12-14T00:03:30Z",
+      "updatedAt": "2021-12-14T19:55:38Z",
       "baseRepository": "chelseakomlo/draft-irtf-cfrg-frost",
       "baseRefName": "master",
       "baseRefOid": "c9d58cf05154ecd3a5a94afed7820d12dab1c54e",
       "headRepository": "chelseakomlo/draft-irtf-cfrg-frost",
       "headRefName": "p256-sha-256",
       "headRefOid": "988686d23366f02f24440d3408f75450fb7276bd",
-      "closedAt": null,
-      "mergedAt": null,
-      "mergedBy": null,
-      "mergeCommit": null,
+      "closedAt": "2021-12-14T14:56:00Z",
+      "mergedAt": "2021-12-14T14:55:59Z",
+      "mergedBy": "chris-wood",
+      "mergeCommit": {
+        "oid": "d44e648edcd9f6b18d589c8058f600728b8d15da"
+      },
       "comments": [
         {
           "author": "dconnolly",
@@ -1133,6 +1161,13 @@
           "body": "@chris-wood where should I put this:\r\n\r\n```\r\nx9.62:\r\n    title: \"Public Key Cryptography for the Financial Services Industry: the Elliptic Curve Digital Signature Algorithm (ECDSA)\"\r\n    date: Sep, 1998\r\n    seriesinfo:\r\n      \"ANSI\": X9.62-1998\r\n    author:\r\n      -\r\n        org: ANSI\r\n\r\n```",
           "createdAt": "2021-12-14T00:03:13Z",
           "updatedAt": "2021-12-14T00:03:13Z"
+        },
+        {
+          "author": "chris-wood",
+          "authorAssociation": "COLLABORATOR",
+          "body": "@dconnolly there's a section up at the top we need to add, so it'd look like so:\r\n\r\n```\r\nnormative:\r\n   x9.62:\r\n     title: \"Public Key Cryptography for the Financial Services Industry: the Elliptic Curve Digital Signature Algorithm (ECDSA)\"\r\n     date: Sep, 1998\r\n     seriesinfo:\r\n       \"ANSI\": X9.62-1998\r\n     author:\r\n       -\r\n         org: ANSI\r\n\r\ninformative:\r\n   FROST20:\r\n   ...\r\n```",
+          "createdAt": "2021-12-14T00:05:11Z",
+          "updatedAt": "2021-12-14T00:05:11Z"
         }
       ],
       "reviews": [
@@ -1163,6 +1198,146 @@
           ]
         }
       ]
+    },
+    {
+      "number": 33,
+      "id": "PR_kwDOEpUZs84v1DOA",
+      "title": "Add contextString variable",
+      "url": "https://github.com/chelseakomlo/draft-irtf-cfrg-frost/pull/33",
+      "state": "MERGED",
+      "author": "chris-wood",
+      "authorAssociation": "COLLABORATOR",
+      "assignees": [],
+      "labels": [],
+      "body": "And add missing reference from #32.",
+      "createdAt": "2021-12-14T15:00:46Z",
+      "updatedAt": "2021-12-14T15:53:04Z",
+      "baseRepository": "chelseakomlo/draft-irtf-cfrg-frost",
+      "baseRefName": "master",
+      "baseRefOid": "d44e648edcd9f6b18d589c8058f600728b8d15da",
+      "headRepository": "chelseakomlo/draft-irtf-cfrg-frost",
+      "headRefName": "caw/add-context",
+      "headRefOid": "f7e2eb42c6a2d729d0196a7ee21c77b238d19193",
+      "closedAt": "2021-12-14T15:53:04Z",
+      "mergedAt": "2021-12-14T15:53:04Z",
+      "mergedBy": "chris-wood",
+      "mergeCommit": {
+        "oid": "97bd6c0017584b3593734b26f5be964e29d33916"
+      },
+      "comments": [],
+      "reviews": [
+        {
+          "id": "PRR_kwDOEpUZs84xkqXF",
+          "commit": {
+            "abbreviatedOid": "c82b4ca"
+          },
+          "author": "dconnolly",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2021-12-14T15:50:06Z",
+          "updatedAt": "2021-12-14T15:50:25Z",
+          "comments": [
+            {
+              "originalPosition": 45,
+              "body": "```suggestion\nThe value of the contextString parameter is \"FROST-RISTRETTO255-SHA512\".\n```\n",
+              "createdAt": "2021-12-14T15:50:06Z",
+              "updatedAt": "2021-12-14T15:50:25Z"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "number": 34,
+      "id": "PR_kwDOEpUZs84v1Lgm",
+      "title": "EdX interop",
+      "url": "https://github.com/chelseakomlo/draft-irtf-cfrg-frost/pull/34",
+      "state": "MERGED",
+      "author": "chris-wood",
+      "authorAssociation": "COLLABORATOR",
+      "assignees": [],
+      "labels": [],
+      "body": "This aligns signature generation and verification with that of [EdX from RFC8032](https://datatracker.ietf.org/doc/html/rfc8032). ",
+      "createdAt": "2021-12-14T15:33:06Z",
+      "updatedAt": "2021-12-14T19:56:15Z",
+      "baseRepository": "chelseakomlo/draft-irtf-cfrg-frost",
+      "baseRefName": "master",
+      "baseRefOid": "d44e648edcd9f6b18d589c8058f600728b8d15da",
+      "headRepository": "chelseakomlo/draft-irtf-cfrg-frost",
+      "headRefName": "caw/edx-alignment",
+      "headRefOid": "d0d9c5bf2962f30c42f500df08ca08194e080fbb",
+      "closedAt": "2021-12-14T19:56:12Z",
+      "mergedAt": "2021-12-14T19:56:12Z",
+      "mergedBy": "dconnolly",
+      "mergeCommit": {
+        "oid": "3bdaa22d7485cdc4adbfb947b530e56b639aa9d0"
+      },
+      "comments": [],
+      "reviews": [
+        {
+          "id": "PRR_kwDOEpUZs84xllyN",
+          "commit": {
+            "abbreviatedOid": "d0d9c5b"
+          },
+          "author": "chelseakomlo",
+          "authorAssociation": "OWNER",
+          "state": "APPROVED",
+          "body": "Looks great to me, thank you \ud83c\udf8a ",
+          "createdAt": "2021-12-14T19:20:23Z",
+          "updatedAt": "2021-12-14T19:20:23Z",
+          "comments": []
+        },
+        {
+          "id": "PRR_kwDOEpUZs84xluYr",
+          "commit": {
+            "abbreviatedOid": "d0d9c5b"
+          },
+          "author": "dconnolly",
+          "authorAssociation": "COLLABORATOR",
+          "state": "APPROVED",
+          "body": "",
+          "createdAt": "2021-12-14T19:56:05Z",
+          "updatedAt": "2021-12-14T19:56:05Z",
+          "comments": []
+        }
+      ]
+    },
+    {
+      "number": 35,
+      "id": "PR_kwDOEpUZs84v2Xne",
+      "title": "Stop adding teor to every PR as a reviewer",
+      "url": "https://github.com/chelseakomlo/draft-irtf-cfrg-frost/pull/35",
+      "state": "MERGED",
+      "author": "teor2345",
+      "authorAssociation": "COLLABORATOR",
+      "assignees": [],
+      "labels": [],
+      "body": "This removes teor from the CODEOWNERS file, so I don't get added as a reviewer to every PR.",
+      "createdAt": "2021-12-14T21:12:11Z",
+      "updatedAt": "2021-12-14T21:17:46Z",
+      "baseRepository": "chelseakomlo/draft-irtf-cfrg-frost",
+      "baseRefName": "master",
+      "baseRefOid": "3bdaa22d7485cdc4adbfb947b530e56b639aa9d0",
+      "headRepository": "chelseakomlo/draft-irtf-cfrg-frost",
+      "headRefName": "stop-adding-teor-reviews",
+      "headRefOid": "2f254ed7dd4b6fa118a43d9480640d68ed36d9df",
+      "closedAt": "2021-12-14T21:17:44Z",
+      "mergedAt": "2021-12-14T21:17:43Z",
+      "mergedBy": "chelseakomlo",
+      "mergeCommit": {
+        "oid": "5bcf68714f4260149388d885f781f778a41fecb1"
+      },
+      "comments": [
+        {
+          "author": "chelseakomlo",
+          "authorAssociation": "OWNER",
+          "body": "Thanks @teor2345, sorry about that! ",
+          "createdAt": "2021-12-14T21:17:39Z",
+          "updatedAt": "2021-12-14T21:17:39Z"
+        }
+      ],
+      "reviews": []
     }
   ]
 }
