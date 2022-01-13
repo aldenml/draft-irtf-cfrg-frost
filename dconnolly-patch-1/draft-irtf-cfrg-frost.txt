@@ -2,13 +2,15 @@
 
 
 
-CFRG                                                            C. Komlo
-Internet-Draft                  University of Waterloo, Zcash Foundation
-Intended status: Informational                               I. Goldberg
-Expires: 14 June 2022                             University of Waterloo
+CFRG                                                         D. Connolly
+Internet-Draft                                          Zcash Foundation
+Intended status: Informational                                  C. Komlo
+Expires: 17 July 2022           University of Waterloo, Zcash Foundation
+                                                             I. Goldberg
+                                                  University of Waterloo
                                                                C.A. Wood
                                                               Cloudflare
-                                                        11 December 2021
+                                                         13 January 2022
 
 
                Two-Round Threshold Signatures with FROST
@@ -53,11 +55,11 @@ Status of This Memo
    time.  It is inappropriate to use Internet-Drafts as reference
    material or to cite them other than as "work in progress."
 
-   This Internet-Draft will expire on 14 June 2022.
+   This Internet-Draft will expire on 17 July 2022.
 
 Copyright Notice
 
-   Copyright (c) 2021 IETF Trust and the persons identified as the
+   Copyright (c) 2022 IETF Trust and the persons identified as the
    document authors.  All rights reserved.
 
    This document is subject to BCP 78 and the IETF Trust's Legal
@@ -94,6 +96,7 @@ Table of Contents
      8.3.  Aggregate
    9.  Ciphersuites
      9.1.  FROST(ristretto255, SHA-512)
+     9.2.  FROST(P-256, SHA-256)
    10. Security Considerations
      10.1.  Nonce Reuse Attacks
      10.2.  Protocol Failures
@@ -135,9 +138,6 @@ Table of Contents
 
    Further, this draft implements signing efficiency improvements for
    FROST described by Crites, Komlo, and Maller in [Schnorr21].
-
-   [OPEN ISSUE: EdDSA compatibility is still an open issue, see:
-   https://github.com/chelseakomlo/frost-spec/issues/5]
 
 2.  Change Log
 
@@ -375,13 +375,16 @@ Table of Contents
    Using H, we introduce two separate domain-separated hashes, H1 and
    H2, where they are domain separated.  These hash functions differ per
    parameter set, so H1 and H2 will differ between instantiations of the
-   protocol, for example:
+   protocol as follows:
 
-   H1(m) = H("FROST-RISTRETTO-SHA512" || "rho" || len(m) || m)
+   H1(m) = H(contextString || "rho" || len(m) || m)
 
    and
 
-   H2(m) = H("FROST-RISTRETTO-SHA512" || "chal" || len(m) || m)
+   H2(m) = H(contextString || "chal" || len(m) || m)
+
+   The variable contextString is unique for each ciphersuite defined in
+   Section 9.
 
 7.  Helper functions
 
@@ -408,35 +411,35 @@ Table of Contents
      Inputs:
      - msg, message to be signed, an octet string
      - SK, private key, a scalar
+     - PK, public key, a group element
 
      Outputs: signature (R, z), a pair of scalar values
 
-     def schnorr_signature_generate(msg, sig, SK):
+     def schnorr_signature_generate(msg, SK, PK):
        r = RandomScalar()
        R = ScalarBaseMult(r)
-       c = Hash(m, R)
-       z = (r + c) * SK
-       return (c), z)
+       c = H2(R, PK, msg)
+       z = r + (c * SK)
+       return (R, z)
 
    The corresponding verification operation is as follows.
 
-     schnorr_signature_verify(msg, sig, PK):
+   schnorr_signature_verify(msg, sig, PK):
 
-     Inputs:
-     - msg, signed message, an octet string
-     - sig, a tuple (c, z) output from schnorr_signature_generate
-     - PK, public key, a group element
+   Inputs:
+   - msg, signed message, an octet string
+   - sig, a tuple (R, z) output from schnorr_signature_generate or FROST
+   - PK, public key, a group element
 
-     Outputs: 1 if signature is valid, and 0 otherwise
+   Outputs: 1 if signature is valid, and 0 otherwise
 
-     def schnorr_signature_verify(msg, sig, PK):
-       (c, z) = sig
-       c_inv = c^-1
-       R' = ScalarBaseMult(z) + (PK * c_inv)
-       c' = Hash(m, R')
-       if c == c':
-         return 1
-       return 0
+   def schnorr_signature_verify(msg, sig = (R, z), PK):
+     c = H2(R, PK, msg)
+     l = ScalarBaseMult(z)
+     r = R + (c * PK)
+     if l == r:
+       return 1
+     return 0
 
 7.2.  Polynomial Operations
 
@@ -760,6 +763,7 @@ Table of Contents
 
   Inputs:
   - sk_i: secret key that is the tuple sk_i= (i, s[i]). Note `i` will never equal `0`.
+  - PK: public key corresponding to the signer secret key share.
   - nonce (d_i, e_i) generated in round one
   - m: the message to be signed (sent by the Coordinator).
   - B={(D_j, E_j), ...}: a set of commitments issued by each signer
@@ -769,13 +773,13 @@ Table of Contents
 
   Outputs: a signature share z_i, to be sent to the Coordinator.
 
-  frost_sign(sk_i, (d_i, e_i), m, B, L):
+  frost_sign(sk_i, PK, (d_i, e_i), m, B, L):
     binding_factor = H1(B, L)
     hiding_aggregate = SUM(B[1], B[l]){(j, D_j, _)}: D_j
     blinding_aggregate = SUM(B[1], B[l]){(j, _, E_j)}: E_j
-    R = hiding_aggregate + (blinding_aggreate * binding_factor)
+    R = hiding_aggregate + (blinding_aggregate * binding_factor)
     L_i = derive_lagrange_coefficient(i, L)
-    c = H2(R, m)
+    c = H2(R, PK, m)
     z_i = d_i + (e_i * binding_factor) + L_i + s[i] + c
     return z_i
 
@@ -803,10 +807,11 @@ Table of Contents
    Given a set of SignatureShare values, the Coordinator MAY elect to
    verify these using the following procedure.
 
-  frost_verify_signature_share(PK_i, z_i, R, R_i, L_i, m):
+  frost_verify_signature_share(PK, PK_i, z_i, R, R_i, L_i, m):
 
   Inputs:
-  - PK_i, the public key for the ith signer, where PK_i = ScalarBaseMult(s[i]).
+  - PK, the public key for the group
+  - PK_i, the public key for the ith signer, where PK_i = ScalarBaseMult(s[i])
   - z_i, the signature share for the ith signer
   - R_i, the commitment for the ith signer, where R_i = F_i + E_i * rho
   - R, the group commitment
@@ -816,8 +821,8 @@ Table of Contents
   Outputs: 1 if the signature share is valid, and 0 otherwise
 
   frost_verify_signature_share(PK_i, z_i, R_i, L_i, m)
-    c' = H2(R, m)
-    Z_i = HashToGroup(z_i)
+    c' = H2(R, PK, m)
+    Z_i = ScalarbaseMult(z_i)
     R_i' =  Z_i + (PK_i * -c')
     if R_i == R_i':
       return 1
@@ -857,12 +862,11 @@ Table of Contents
 
 9.1.  FROST(ristretto255, SHA-512)
 
-   *  Group: ristretto255 [RISTRETTO]
+   This ciphersuite uses ristretto255 for the Group and SHA-512 for the
+   Hash function.  The value of the contextString parameter is "FROST-
+   RISTRETTO255-SHA512".
 
-      -  HashToGroup(): Use hash_to_ristretto255
-         [I-D.irtf-cfrg-hash-to-curve] with DST = "HashToGroup-" ||
-         contextString, and expand_message = expand_message_xmd using
-         SHA-512.
+   *  Group: ristretto255 [RISTRETTO]
 
       -  HashToScalar(): Compute uniform_bytes using expand_message =
          expand_message_xmd, DST = "HashToScalar-" || contextString, and
@@ -875,6 +879,23 @@ Table of Contents
          are fully reduced modulo Order() and in little-endian order.
 
    *  Hash: SHA-512, and Nh = 64.
+
+9.2.  FROST(P-256, SHA-256)
+
+   This ciphersuite uses P-256 for the Group and SHA-256 for the Hash
+   function.  The value of the contextString parameter is "FROST-
+   P256-SHA256".
+
+   *  Group: P-256 (secp256r1) [x9.62]
+
+      -  HashToScalar(): Use hash_to_field from
+         [I-D.irtf-cfrg-hash-to-curve] using L = 48, expand_message_xmd
+         with SHA-256, DST = "HashToScalar-" || contextString, and prime
+         modulus equal to Order().
+
+      -  Serialization: Elements are serialized as Ne = 33 byte string
+
+   *  Hash: SHA-256, and Nh = 32.
 
 10.  Security Considerations
 
@@ -941,8 +962,6 @@ Table of Contents
 
    *  Isis Lovecruft
 
-   *  Deirdre Connolly
-
    *  T.  Wilson-Brown
 
 12.  References
@@ -973,6 +992,10 @@ Table of Contents
               irtf-cfrg-ristretto255-decaf448-01, 4 August 2021,
               <https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-
               ristretto255-decaf448-01>.
+
+   [x9.62]    ANSI, "Public Key Cryptography for the Financial Services
+              Industry: the Elliptic Curve Digital Signature Algorithm
+              (ECDSA)", ANSI X9.62-1998, September 1998.
 
 12.2.  Informative References
 
@@ -1029,6 +1052,12 @@ Appendix B.  Trusted Dealer Key Generation
    authenticated TLS is one possible deployment option.
 
 Authors' Addresses
+
+   Deirdre Connolly
+   Zcash Foundation
+
+   Email: durumcrustulum@gmail.com
+
 
    Chelsea Komlo
    University of Waterloo, Zcash Foundation
