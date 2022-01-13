@@ -1227,15 +1227,13 @@ participant is malicious.<a href="#section-abstract-1" class="pilcrow">¶</a></p
               <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.10.2.2">
                 <p id="section-toc.1-1.10.2.2.1"><a href="#section-10.2" class="xref">10.2</a>.  <a href="#name-protocol-failures" class="xref">Protocol Failures</a></p>
 </li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.10.2.3">
+                <p id="section-toc.1-1.10.2.3.1"><a href="#section-10.3" class="xref">10.3</a>.  <a href="#name-external-requirements-non-g" class="xref">External Requirements / Non-Goals</a></p>
+</li>
             </ul>
 </li>
           <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.11">
             <p id="section-toc.1-1.11.1"><a href="#section-11" class="xref">11</a>. <a href="#name-removing-the-coordinator-ro" class="xref">Removing the Coordinator Role</a></p>
-<ul class="compact toc ulBare ulEmpty">
-<li class="compact toc ulBare ulEmpty" id="section-toc.1-1.11.2.1">
-                <p id="section-toc.1-1.11.2.1.1"><a href="#section-11.1" class="xref">11.1</a>.  <a href="#name-external-requirements-non-g" class="xref">External Requirements / Non-Goals</a></p>
-</li>
-            </ul>
 </li>
           <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.12">
             <p id="section-toc.1-1.12.1"><a href="#section-12" class="xref">12</a>. <a href="#name-contributors" class="xref">Contributors</a></p>
@@ -2213,6 +2211,26 @@ the protocol abort. Examples of viable failure include when a verification check
 if the underlying transport failed to deliver the required messages.<a href="#section-10.2-1" class="pilcrow">¶</a></p>
 </section>
 </div>
+<div id="external-requirements-non-goals">
+<section id="section-10.3">
+        <h3 id="name-external-requirements-non-g">
+<a href="#section-10.3" class="section-number selfRef">10.3. </a><a href="#name-external-requirements-non-g" class="section-name selfRef">External Requirements / Non-Goals</a>
+        </h3>
+<p id="section-10.3-1">FROST does not target the following goals.<a href="#section-10.3-1" class="pilcrow">¶</a></p>
+<ul class="normal">
+<li class="normal" id="section-10.3-2.1">Post quantum security. FROST requires the hardness of the Discrete Logarithm Problem.<a href="#section-10.3-2.1" class="pilcrow">¶</a>
+</li>
+          <li class="normal" id="section-10.3-2.2">Robustness. In the case of failure, FROST requires aborting the protocol.<a href="#section-10.3-2.2" class="pilcrow">¶</a>
+</li>
+          <li class="normal" id="section-10.3-2.3">Downgrade prevention. The sender and receiver are assumed to agree on what algorithms
+to use.<a href="#section-10.3-2.3" class="pilcrow">¶</a>
+</li>
+          <li class="normal" id="section-10.3-2.4">Metadata protection. If protection for metadata is desired, a higher-level communication
+channel can be used to facilitate key generation and signing.<a href="#section-10.3-2.4" class="pilcrow">¶</a>
+</li>
+        </ul>
+</section>
+</div>
 </section>
 </div>
 <div id="removing-the-coordinator-role">
@@ -2221,29 +2239,9 @@ if the underlying transport failed to deliver the required messages.<a href="#se
 <a href="#section-11" class="section-number selfRef">11. </a><a href="#name-removing-the-coordinator-ro" class="section-name selfRef">Removing the Coordinator Role</a>
       </h2>
 <p id="section-11-1">In some settings, it may be desirable to omit the role of the coordinator entirely. Doing so does not change the security implications of FROST, but instead simply requires each participant to communicate with all other participants. We loosely describe how to perform FROST signing among signers without this coordinator role. We assume that every participant receives as input from an external source the message to be signed prior to performing the protocol.<a href="#section-11-1" class="pilcrow">¶</a></p>
-<p id="section-11-2">Every participant begins by performing <code>frost_commit()</code> as is done in the setting where a coordinator is used. However, instead of sending the commitment <code>SigningCommitment</code> to the coordinator, every participant instead will publish this commitment to every other participant.<a href="#section-11-2" class="pilcrow">¶</a></p>
-<p id="section-11-3">Then, in the second round, instead of receiving a <code>SigningPackage</code> from the coordinator, signers will already have sufficient information to perform signing. They will directly perform <code>frost_sign</code>. All participants will then publish a <code>SignatureShare</code> to one another.
-After having received all signature shares from all other signers, each signer will then perform <code>frost_verify</code> and then <code>frost_aggregate</code> directly.<a href="#section-11-3" class="pilcrow">¶</a></p>
-<div id="external-requirements-non-goals">
-<section id="section-11.1">
-        <h3 id="name-external-requirements-non-g">
-<a href="#section-11.1" class="section-number selfRef">11.1. </a><a href="#name-external-requirements-non-g" class="section-name selfRef">External Requirements / Non-Goals</a>
-        </h3>
-<p id="section-11.1-1">FROST does not target the following goals.<a href="#section-11.1-1" class="pilcrow">¶</a></p>
-<ul class="normal">
-<li class="normal" id="section-11.1-2.1">Post quantum security. FROST requires the hardness of the Discrete Logarithm Problem.<a href="#section-11.1-2.1" class="pilcrow">¶</a>
-</li>
-          <li class="normal" id="section-11.1-2.2">Robustness. In the case of failure, FROST requires aborting the protocol.<a href="#section-11.1-2.2" class="pilcrow">¶</a>
-</li>
-          <li class="normal" id="section-11.1-2.3">Downgrade prevention. The sender and receiver are assumed to agree on what algorithms
-to use.<a href="#section-11.1-2.3" class="pilcrow">¶</a>
-</li>
-          <li class="normal" id="section-11.1-2.4">Metadata protection. If protection for metadata is desired, a higher-level communication
-channel can be used to facilitate key generation and signing.<a href="#section-11.1-2.4" class="pilcrow">¶</a>
-</li>
-        </ul>
-</section>
-</div>
+<p id="section-11-2">Every participant begins by performing <code>frost_commit()</code> as is done in the setting where a coordinator is used. However, instead of sending the commitment <code>SigningCommitment</code> to the coordinator, every participant instead will publish this commitment to every other participant.
+Then, in the second round, instead of receiving a <code>SigningPackage</code> from the coordinator, signers will already have sufficient information to perform signing. They will directly perform <code>frost_sign</code>. All participants will then publish a <code>SignatureShare</code> to one another.
+After having received all signature shares from all other signers, each signer will then perform <code>frost_verify</code> and then <code>frost_aggregate</code> directly.<a href="#section-11-2" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="contributors">
