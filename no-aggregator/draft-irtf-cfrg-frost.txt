@@ -5,12 +5,12 @@
 CFRG                                                            C. Komlo
 Internet-Draft                  University of Waterloo, Zcash Foundation
 Intended status: Informational                               I. Goldberg
-Expires: 17 July 2022                             University of Waterloo
+Expires: 22 July 2022                             University of Waterloo
                                                                C.A. Wood
                                                               Cloudflare
                                                              D. Connolly
                                                         Zcash Foundation
-                                                         13 January 2022
+                                                         18 January 2022
 
 
                Two-Round Threshold Signatures with FROST
@@ -55,7 +55,7 @@ Status of This Memo
    time.  It is inappropriate to use Internet-Drafts as reference
    material or to cite them other than as "work in progress."
 
-   This Internet-Draft will expire on 17 July 2022.
+   This Internet-Draft will expire on 22 July 2022.
 
 Copyright Notice
 
@@ -961,6 +961,17 @@ Table of Contents
    SignatureShare to one another.  After having received all signature
    shares from all other signers, each signer will then perform
    frost_verify and then frost_aggregate directly.
+
+   The requirements for the underlying network channel remain the same
+   in the setting where all participants play the role of the
+   coordinator, in that all messages that are exchanged are public and
+   so the channel simply must be reliable.  However, in the setting that
+   a player attempts to split the view of all other players by sending
+   disjoint values to a subset of players, the signing operation will
+   output an invalid signature.  To avoid this denial of service,
+   implementations may wish to define a mechanism where messages are
+   authenticated, so that cheating players can be identified and
+   excluded.
 
 12.  Contributors
 
