@@ -5,12 +5,12 @@
 CFRG                                                         D. Connolly
 Internet-Draft                                          Zcash Foundation
 Intended status: Informational                                  C. Komlo
-Expires: 17 July 2022           University of Waterloo, Zcash Foundation
+Expires: 22 July 2022           University of Waterloo, Zcash Foundation
                                                              I. Goldberg
                                                   University of Waterloo
                                                                C.A. Wood
                                                               Cloudflare
-                                                         13 January 2022
+                                                         18 January 2022
 
 
                Two-Round Threshold Signatures with FROST
@@ -55,7 +55,7 @@ Status of This Memo
    time.  It is inappropriate to use Internet-Drafts as reference
    material or to cite them other than as "work in progress."
 
-   This Internet-Draft will expire on 17 July 2022.
+   This Internet-Draft will expire on 22 July 2022.
 
 Copyright Notice
 
@@ -101,10 +101,11 @@ Table of Contents
      10.1.  Nonce Reuse Attacks
      10.2.  Protocol Failures
      10.3.  External Requirements / Non-Goals
-   11. Contributors
-   12. References
-     12.1.  Normative References
-     12.2.  Informative References
+   11. Removing the Coordinator Role
+   12. Contributors
+   13. References
+     13.1.  Normative References
+     13.2.  Informative References
    Appendix A.  Acknowledgments
    Appendix B.  Trusted Dealer Key Generation
    Authors' Addresses
@@ -958,15 +959,48 @@ Table of Contents
       higher-level communication channel can be used to facilitate key
       generation and signing.
 
-11.  Contributors
+11.  Removing the Coordinator Role
+
+   In some settings, it may be desirable to omit the role of the
+   coordinator entirely.  Doing so does not change the security
+   implications of FROST, but instead simply requires each participant
+   to communicate with all other participants.  We loosely describe how
+   to perform FROST signing among signers without this coordinator role.
+   We assume that every participant receives as input from an external
+   source the message to be signed prior to performing the protocol.
+
+   Every participant begins by performing frost_commit() as is done in
+   the setting where a coordinator is used.  However, instead of sending
+   the commitment SigningCommitment to the coordinator, every
+   participant instead will publish this commitment to every other
+   participant.  Then, in the second round, instead of receiving a
+   SigningPackage from the coordinator, signers will already have
+   sufficient information to perform signing.  They will directly
+   perform frost_sign.  All participants will then publish a
+   SignatureShare to one another.  After having received all signature
+   shares from all other signers, each signer will then perform
+   frost_verify and then frost_aggregate directly.
+
+   The requirements for the underlying network channel remain the same
+   in the setting where all participants play the role of the
+   coordinator, in that all messages that are exchanged are public and
+   so the channel simply must be reliable.  However, in the setting that
+   a player attempts to split the view of all other players by sending
+   disjoint values to a subset of players, the signing operation will
+   output an invalid signature.  To avoid this denial of service,
+   implementations may wish to define a mechanism where messages are
+   authenticated, so that cheating players can be identified and
+   excluded.
+
+12.  Contributors
 
    *  Isis Lovecruft
 
    *  T.  Wilson-Brown
 
-12.  References
+13.  References
 
-12.1.  Normative References
+13.1.  Normative References
 
    [I-D.irtf-cfrg-hash-to-curve]
               Faz-Hernandez, A., Scott, S., Sullivan, N., Wahby, R. S.,
@@ -997,7 +1031,7 @@ Table of Contents
               Industry: the Elliptic Curve Digital Signature Algorithm
               (ECDSA)", ANSI X9.62-1998, September 1998.
 
-12.2.  Informative References
+13.2.  Informative References
 
    [FROST20]  Komlo, C. and I. Goldberg, "Two-Round Threshold Signatures
               with FROST", 22 December 2020,
