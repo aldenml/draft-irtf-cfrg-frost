@@ -1,6 +1,6 @@
 {
   "magic": "E!vIA5L86J2I",
-  "timestamp": "2022-01-16T00:34:01.857430+00:00",
+  "timestamp": "2022-01-20T00:36:01.016995+00:00",
   "repo": "cfrg/draft-irtf-cfrg-frost",
   "labels": [
     {
@@ -442,7 +442,7 @@
       "id": "I_kwDOEpUZs84-1t9h",
       "title": "Explictly describe assumptions when making each signing participant an aggregator",
       "url": "https://github.com/cfrg/draft-irtf-cfrg-frost/issues/25",
-      "state": "OPEN",
+      "state": "CLOSED",
       "author": "dconnolly",
       "authorAssociation": "COLLABORATOR",
       "assignees": [
@@ -453,8 +453,8 @@
       ],
       "body": "Vs having a single explicit aggregator:\r\n\r\n![image](https://user-images.githubusercontent.com/552961/141872069-a9d80b4d-094d-4159-8006-0de1843bc0ed.png)\r\n\r\nTo me this assumes some other trust level amongst the signing participants if they are allowed to self-verify its own signature before outputting it.",
       "createdAt": "2021-11-15T23:56:46Z",
-      "updatedAt": "2021-12-15T20:56:27Z",
-      "closedAt": null,
+      "updatedAt": "2022-01-18T20:00:55Z",
+      "closedAt": "2022-01-18T20:00:55Z",
       "comments": [
         {
           "author": "chelseakomlo",
@@ -462,6 +462,13 @@
           "body": "Use case: https://blog.coinbase.com/threshold-digital-signatures-1d467054acd4",
           "createdAt": "2021-11-16T00:02:26Z",
           "updatedAt": "2021-11-16T00:02:26Z"
+        },
+        {
+          "author": "chelseakomlo",
+          "authorAssociation": "COLLABORATOR",
+          "body": "Addressed in #39",
+          "createdAt": "2022-01-18T20:00:55Z",
+          "updatedAt": "2022-01-18T20:00:55Z"
         }
       ]
     },
@@ -623,11 +630,13 @@
       "state": "OPEN",
       "author": "chelseakomlo",
       "authorAssociation": "COLLABORATOR",
-      "assignees": [],
+      "assignees": [
+        "chelseakomlo"
+      ],
       "labels": [],
       "body": "The draft assumes that all participants verify the message that they are signing before they sign it. We should make this assumption explicit in the draft. ",
       "createdAt": "2022-01-13T21:49:30Z",
-      "updatedAt": "2022-01-13T21:49:30Z",
+      "updatedAt": "2022-01-18T21:02:33Z",
       "closedAt": null,
       "comments": []
     },
@@ -639,11 +648,13 @@
       "state": "OPEN",
       "author": "chelseakomlo",
       "authorAssociation": "COLLABORATOR",
-      "assignees": [],
+      "assignees": [
+        "chelseakomlo"
+      ],
       "labels": [],
       "body": "We should add a section with consistent error codes and a description of the errors that they correspond to, such as: \r\n\r\n1. When a signature share is invalid\r\n2. When `t` is set to `1`\r\n3. When `t` is greater than `n`\r\n4. When fewer than `t` commitments are received\r\n5. When any received commitment is null\r\n6. When a participant index is `0`\r\n7. When the message that is requested to be signed is invalid\r\n8. When a signing request is made with respect to commitments that were used for a previous signature (i.e, request for a nonce reuse)",
       "createdAt": "2022-01-13T23:22:00Z",
-      "updatedAt": "2022-01-13T23:40:52Z",
+      "updatedAt": "2022-01-18T19:37:35Z",
       "closedAt": null,
       "comments": []
     },
@@ -1631,25 +1642,35 @@
       "id": "PR_kwDOEpUZs84w5JWS",
       "title": "Rough description of performing the protocol without the aggregator",
       "url": "https://github.com/cfrg/draft-irtf-cfrg-frost/pull/39",
-      "state": "OPEN",
+      "state": "MERGED",
       "author": "chelseakomlo",
       "authorAssociation": "COLLABORATOR",
       "assignees": [],
       "labels": [],
       "body": "Addresses #25",
       "createdAt": "2022-01-13T01:39:07Z",
-      "updatedAt": "2022-01-13T23:20:04Z",
+      "updatedAt": "2022-01-18T20:00:26Z",
       "baseRepository": "cfrg/draft-irtf-cfrg-frost",
       "baseRefName": "master",
       "baseRefOid": "5bcf68714f4260149388d885f781f778a41fecb1",
       "headRepository": "cfrg/draft-irtf-cfrg-frost",
       "headRefName": "no-aggregator",
-      "headRefOid": "e8745211cb8164751b94d5068b0ecab3cbca9e54",
-      "closedAt": null,
-      "mergedAt": null,
-      "mergedBy": null,
-      "mergeCommit": null,
-      "comments": [],
+      "headRefOid": "c58e4bf53fa5d30769034779b7f002c79803fe89",
+      "closedAt": "2022-01-18T20:00:22Z",
+      "mergedAt": "2022-01-18T20:00:22Z",
+      "mergedBy": "chelseakomlo",
+      "mergeCommit": {
+        "oid": "38e8fa7a19f2778b4b2fd6c8a3eeb309dc7a8cfb"
+      },
+      "comments": [
+        {
+          "author": "chelseakomlo",
+          "authorAssociation": "COLLABORATOR",
+          "body": "Addressed the comment from @chris-wood in the last commit, hopefully this description of the network channel requirements is clear. ",
+          "createdAt": "2022-01-18T20:00:17Z",
+          "updatedAt": "2022-01-18T20:00:17Z"
+        }
+      ],
       "reviews": [
         {
           "id": "PRR_kwDOEpUZs84yy_B3",
@@ -1691,7 +1712,7 @@
       "labels": [],
       "body": "To ensure a fixed size message when calculating `rho` or the sig challenge, always hash the message into a fixed size first.\r\n\r\nAlso consistently use `msg`, and some tidy\r\n\r\nhttps://github.com/cfrg/draft-irtf-cfrg-frost/issues/43",
       "createdAt": "2022-01-13T20:46:52Z",
-      "updatedAt": "2022-01-13T23:30:23Z",
+      "updatedAt": "2022-01-18T19:29:56Z",
       "baseRepository": "cfrg/draft-irtf-cfrg-frost",
       "baseRefName": "master",
       "baseRefOid": "9c9b76280aa433b08f576760c6b81cfe83947d10",
@@ -1738,8 +1759,67 @@
           "createdAt": "2022-01-13T21:55:09Z",
           "updatedAt": "2022-01-13T21:55:09Z",
           "comments": []
+        },
+        {
+          "id": "PRR_kwDOEpUZs84zA7LP",
+          "commit": {
+            "abbreviatedOid": "272c75c"
+          },
+          "author": "chelseakomlo",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2022-01-18T19:29:23Z",
+          "updatedAt": "2022-01-18T19:29:24Z",
+          "comments": [
+            {
+              "originalPosition": 7,
+              "body": "I would add a comment here that a domain seperator is omitted specifically for backwards compatibility and citation.",
+              "createdAt": "2022-01-18T19:29:23Z",
+              "updatedAt": "2022-01-18T19:29:24Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOEpUZs84zA7d5",
+          "commit": {
+            "abbreviatedOid": "272c75c"
+          },
+          "author": "chelseakomlo",
+          "authorAssociation": "COLLABORATOR",
+          "state": "APPROVED",
+          "body": "Approved, with request for comment on backwards compatibility and choice of `H3`",
+          "createdAt": "2022-01-18T19:29:56Z",
+          "updatedAt": "2022-01-18T19:29:56Z",
+          "comments": []
         }
       ]
+    },
+    {
+      "number": 52,
+      "id": "PR_kwDOEpUZs84xObFo",
+      "title": "Update order of rho with regard to participant identifiers",
+      "url": "https://github.com/cfrg/draft-irtf-cfrg-frost/pull/52",
+      "state": "OPEN",
+      "author": "chelseakomlo",
+      "authorAssociation": "COLLABORATOR",
+      "assignees": [],
+      "labels": [],
+      "body": "Addresses #17 ",
+      "createdAt": "2022-01-18T20:48:05Z",
+      "updatedAt": "2022-01-18T20:48:13Z",
+      "baseRepository": "cfrg/draft-irtf-cfrg-frost",
+      "baseRefName": "master",
+      "baseRefOid": "38e8fa7a19f2778b4b2fd6c8a3eeb309dc7a8cfb",
+      "headRepository": "cfrg/draft-irtf-cfrg-frost",
+      "headRefName": "order-rho",
+      "headRefOid": "89e3a47efd2f8f0d9753853a90d7793368c20b26",
+      "closedAt": null,
+      "mergedAt": null,
+      "mergedBy": null,
+      "mergeCommit": null,
+      "comments": [],
+      "reviews": []
     }
   ]
 }
