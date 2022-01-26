@@ -5,12 +5,12 @@
 CFRG                                                         D. Connolly
 Internet-Draft                                          Zcash Foundation
 Intended status: Informational                                  C. Komlo
-Expires: 29 July 2022           University of Waterloo, Zcash Foundation
+Expires: 30 July 2022           University of Waterloo, Zcash Foundation
                                                              I. Goldberg
                                                   University of Waterloo
                                                                C.A. Wood
                                                               Cloudflare
-                                                         25 January 2022
+                                                         26 January 2022
 
 
                Two-Round Threshold Signatures with FROST
@@ -33,12 +33,12 @@ Discussion Venues
 
    This note is to be removed before publishing as an RFC.
 
-   Discussion of this document takes place on the mailing list
-   (cfrg@ietf.org), which is archived at
-   https://mailarchive.ietf.org/arch/browse/cfrg/.
+   Discussion of this document takes place on the Crypto Forum Research
+   Group mailing list (cfrg@ietf.org), which is archived at
+   https://mailarchive.ietf.org/arch/search/?email_list=cfrg.
 
    Source for this draft and an issue tracker can be found at
-   https://github.com/chelseakomlo/frost-spec.
+   https://github.com/cfrg/draft-irtf-cfrg-frost.
 
 Status of This Memo
 
@@ -55,7 +55,7 @@ Status of This Memo
    time.  It is inappropriate to use Internet-Drafts as reference
    material or to cite them other than as "work in progress."
 
-   This Internet-Draft will expire on 29 July 2022.
+   This Internet-Draft will expire on 30 July 2022.
 
 Copyright Notice
 
