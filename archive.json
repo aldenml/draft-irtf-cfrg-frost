@@ -1,6 +1,6 @@
 {
   "magic": "E!vIA5L86J2I",
-  "timestamp": "2022-01-20T00:36:01.016995+00:00",
+  "timestamp": "2022-01-27T00:30:14.454994+00:00",
   "repo": "cfrg/draft-irtf-cfrg-frost",
   "labels": [
     {
@@ -643,7 +643,7 @@
     {
       "number": 48,
       "id": "I_kwDOEpUZs85Bt8XV",
-      "title": "Specify consistent error codes",
+      "title": "Specify places in the spec where the protocol should error or abort",
       "url": "https://github.com/cfrg/draft-irtf-cfrg-frost/issues/48",
       "state": "OPEN",
       "author": "chelseakomlo",
@@ -652,9 +652,9 @@
         "chelseakomlo"
       ],
       "labels": [],
-      "body": "We should add a section with consistent error codes and a description of the errors that they correspond to, such as: \r\n\r\n1. When a signature share is invalid\r\n2. When `t` is set to `1`\r\n3. When `t` is greater than `n`\r\n4. When fewer than `t` commitments are received\r\n5. When any received commitment is null\r\n6. When a participant index is `0`\r\n7. When the message that is requested to be signed is invalid\r\n8. When a signing request is made with respect to commitments that were used for a previous signature (i.e, request for a nonce reuse)",
+      "body": "We should add everywhere in the spec where the protocol should error and/or abort, such as: \r\n\r\n1. When a signature share is invalid\r\n2. When `t` is set to `1`\r\n3. When `t` is greater than `n`\r\n4. When fewer than `t` commitments are received\r\n5. When any received commitment is null\r\n6. When a participant index is `0`\r\n7. When the message that is requested to be signed is invalid\r\n8. When a signing request is made with respect to commitments that were used for a previous signature (i.e, request for a nonce reuse)",
       "createdAt": "2022-01-13T23:22:00Z",
-      "updatedAt": "2022-01-18T19:37:35Z",
+      "updatedAt": "2022-01-25T20:36:06Z",
       "closedAt": null,
       "comments": []
     },
@@ -690,9 +690,17 @@
       "labels": [],
       "body": "\"c\" and \"rho\" are both the result of hash-to-scalar (H2), but we don't really make clear how the scalar conversion is done.\r\n\r\n",
       "createdAt": "2022-01-13T23:45:35Z",
-      "updatedAt": "2022-01-13T23:46:33Z",
+      "updatedAt": "2022-01-26T23:12:33Z",
       "closedAt": null,
-      "comments": []
+      "comments": [
+        {
+          "author": "chris-wood",
+          "authorAssociation": "COLLABORATOR",
+          "body": "Same goes for the output of H1, too, which is assumed to map to a non-zero scalar.",
+          "createdAt": "2022-01-26T23:12:19Z",
+          "updatedAt": "2022-01-26T23:12:33Z"
+        }
+      ]
     },
     {
       "number": 51,
@@ -1800,26 +1808,42 @@
       "id": "PR_kwDOEpUZs84xObFo",
       "title": "Update order of rho with regard to participant identifiers",
       "url": "https://github.com/cfrg/draft-irtf-cfrg-frost/pull/52",
-      "state": "OPEN",
+      "state": "MERGED",
       "author": "chelseakomlo",
       "authorAssociation": "COLLABORATOR",
       "assignees": [],
       "labels": [],
       "body": "Addresses #17 ",
       "createdAt": "2022-01-18T20:48:05Z",
-      "updatedAt": "2022-01-18T20:48:13Z",
+      "updatedAt": "2022-01-25T20:39:54Z",
       "baseRepository": "cfrg/draft-irtf-cfrg-frost",
       "baseRefName": "master",
       "baseRefOid": "38e8fa7a19f2778b4b2fd6c8a3eeb309dc7a8cfb",
       "headRepository": "cfrg/draft-irtf-cfrg-frost",
       "headRefName": "order-rho",
       "headRefOid": "89e3a47efd2f8f0d9753853a90d7793368c20b26",
-      "closedAt": null,
-      "mergedAt": null,
-      "mergedBy": null,
-      "mergeCommit": null,
+      "closedAt": "2022-01-25T20:38:19Z",
+      "mergedAt": "2022-01-25T20:38:19Z",
+      "mergedBy": "dconnolly",
+      "mergeCommit": {
+        "oid": "34dc444633489c8687440cc3e04edb408f1e1bcb"
+      },
       "comments": [],
-      "reviews": []
+      "reviews": [
+        {
+          "id": "PRR_kwDOEpUZs84zbdSy",
+          "commit": {
+            "abbreviatedOid": "89e3a47"
+          },
+          "author": "dconnolly",
+          "authorAssociation": "COLLABORATOR",
+          "state": "APPROVED",
+          "body": "Good for now, if anyone runs into any confusion about the j, D_j, etc order, we can clarify further",
+          "createdAt": "2022-01-25T20:36:15Z",
+          "updatedAt": "2022-01-25T20:36:15Z",
+          "comments": []
+        }
+      ]
     }
   ]
 }
