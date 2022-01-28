@@ -1026,7 +1026,7 @@ svg [stroke="fill"], svg [fill^="#fff"] {
 </tr></thead>
 <tfoot><tr>
 <td class="left">Connolly, et al.</td>
-<td class="center">Expires 30 July 2022</td>
+<td class="center">Expires 1 August 2022</td>
 <td class="right">[Page]</td>
 </tr></tfoot>
 </table>
@@ -1039,12 +1039,12 @@ svg [stroke="fill"], svg [fill^="#fff"] {
 <dd class="internet-draft">draft-irtf-cfrg-frost-latest</dd>
 <dt class="label-published">Published:</dt>
 <dd class="published">
-<time datetime="2022-01-26" class="published">26 January 2022</time>
+<time datetime="2022-01-28" class="published">28 January 2022</time>
     </dd>
 <dt class="label-intended-status">Intended Status:</dt>
 <dd class="intended-status">Informational</dd>
 <dt class="label-expires">Expires:</dt>
-<dd class="expires"><time datetime="2022-07-30">30 July 2022</time></dd>
+<dd class="expires"><time datetime="2022-08-01">1 August 2022</time></dd>
 <dt class="label-authors">Authors:</dt>
 <dd class="authors">
 <div class="author">
@@ -1108,7 +1108,7 @@ participant is malicious.<a href="#section-abstract-1" class="pilcrow">¶</a></p
         time. It is inappropriate to use Internet-Drafts as reference
         material or to cite them other than as "work in progress."<a href="#section-boilerplate.1-3" class="pilcrow">¶</a></p>
 <p id="section-boilerplate.1-4">
-        This Internet-Draft will expire on 30 July 2022.<a href="#section-boilerplate.1-4" class="pilcrow">¶</a></p>
+        This Internet-Draft will expire on 1 August 2022.<a href="#section-boilerplate.1-4" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="copyright">
@@ -1557,7 +1557,15 @@ H1(m) = H(contextString || "rho" || len(m) || m)
 H2(m) = H(contextString || "chal" || len(m) || m)
 </pre><a href="#section-6.2-5" class="pilcrow">¶</a>
 </div>
-<p id="section-6.2-6">The variable contextString is unique for each ciphersuite defined in <a href="#ciphersuites" class="xref">Section 9</a>.<a href="#section-6.2-6" class="pilcrow">¶</a></p>
+<p id="section-6.2-6">and<a href="#section-6.2-6" class="pilcrow">¶</a></p>
+<div class="alignLeft art-text artwork" id="section-6.2-7">
+<pre>
+H3(m) = H(m)
+
+Normally this would also include a domain separator, but for backwards compatibility with other Schnorr signatures, we omit it here.
+</pre><a href="#section-6.2-7" class="pilcrow">¶</a>
+</div>
+<p id="section-6.2-8">The variable contextString is unique for each ciphersuite defined in <a href="#ciphersuites" class="xref">Section 9</a>.<a href="#section-6.2-8" class="pilcrow">¶</a></p>
 </section>
 </div>
 </section>
@@ -1601,7 +1609,8 @@ following operation.<a href="#section-7.1-1" class="pilcrow">¶</a></p>
   def schnorr_signature_generate(msg, SK, PK):
     r = RandomScalar()
     R = ScalarBaseMult(r)
-    c = H2(R, PK, msg)
+    msg_hash = H3(msg)
+    c = H2(R, PK, msg_hash)
     z = r + (c * SK)
     return (R, z)
 </pre><a href="#section-7.1-2" class="pilcrow">¶</a>
@@ -1619,7 +1628,8 @@ following operation.<a href="#section-7.1-1" class="pilcrow">¶</a></p>
   Outputs: 1 if signature is valid, and 0 otherwise
 
   def schnorr_signature_verify(msg, sig = (R, z), PK):
-    c = H2(R, PK, msg)
+    msg_hash = H3(msg)
+    c = H2(R, PK, msg_hash)
     l = ScalarBaseMult(z)
     r = R + (c * PK)
     if l == r:
@@ -2009,7 +2019,7 @@ msg  </dt>
 <p id="section-8.2-5">Each signer then runs the following procedure.<a href="#section-8.2-5" class="pilcrow">¶</a></p>
 <div class="alignLeft art-text artwork" id="section-8.2-6">
 <pre>
-  frost_sign(sk_i, (d_i, e_i), m, B, L):
+  frost_sign(sk_i, (d_i, e_i), msg, B, L):
 
   Inputs:
   - sk_i: secret key that is the tuple sk_i= (i, s[i]). Note `i` will never equal `0`.
@@ -2029,8 +2039,10 @@ msg  </dt>
     hiding_aggregate = SUM(B[1], B[l]){(j, D_j, _)}: D_j
     blinding_aggregate = SUM(B[1], B[l]){(j, _, E_j)}: E_j
     R = hiding_aggregate + (blinding_aggregate * binding_factor)
+    (i, s[i]) = sk_i
     L_i = derive_lagrange_coefficient(i, L)
-    c = H2(R, PK, m)
+    msg_hash = H(msg)
+    c = H2(R, PK, msg_hash)
     z_i = d_i + (e_i * binding_factor) + L_i + s[i] + c
     return z_i
 </pre><a href="#section-8.2-6" class="pilcrow">¶</a>
@@ -2073,7 +2085,7 @@ the same SigningPackage.<a href="#section-8.2-10" class="pilcrow">¶</a></p>
 using the following procedure.<a href="#section-8.2-11" class="pilcrow">¶</a></p>
 <div class="alignLeft art-text artwork" id="section-8.2-12">
 <pre>
-  frost_verify_signature_share(PK, PK_i, z_i, R, R_i, L_i, m):
+  frost_verify_signature_share(PK, PK_i, z_i, R, R_i, L_i, msg):
 
   Inputs:
   - PK, the public key for the group
@@ -2082,12 +2094,13 @@ using the following procedure.<a href="#section-8.2-11" class="pilcrow">¶</a></
   - R_i, the commitment for the ith signer, where R_i = F_i + E_i * rho
   - R, the group commitment
   - L_i, the ith Lagrange coefficient for the signing set.
-  - m, the message to be signed
+  - msg, the message to be signed
 
   Outputs: 1 if the signature share is valid, and 0 otherwise
 
-  frost_verify_signature_share(PK_i, z_i, R_i, L_i, m)
-    c' = H2(R, PK, m)
+  frost_verify_signature_share(PK_i, z_i, R_i, L_i, msg)
+    msg_hash = H(msg)
+    c' = H2(R, PK, msg_hash)
     Z_i = ScalarbaseMult(z_i)
     R_i' =  Z_i + (PK_i * -c')
     if R_i == R_i':
@@ -2142,7 +2155,7 @@ The RECOMMENDED ciphersuite is (ristretto255, SHA-512) <a href="#recommended-sui
         <h3 id="name-frostristretto255-sha-512">
 <a href="#section-9.1" class="section-number selfRef">9.1. </a><a href="#name-frostristretto255-sha-512" class="section-name selfRef">FROST(ristretto255, SHA-512)</a>
         </h3>
-<p id="section-9.1-1">This ciphersuite uses ristretto255 for the Group and SHA-512 for the Hash function.
+<p id="section-9.1-1">This ciphersuite uses ristretto255 for the Group and SHA-512 for the Hash function <code>H</code>.
 The value of the contextString parameter is "FROST-RISTRETTO255-SHA512".<a href="#section-9.1-1" class="pilcrow">¶</a></p>
 <ul class="normal">
 <li class="normal" id="section-9.1-2.1">
@@ -2160,7 +2173,7 @@ and in little-endian order.<a href="#section-9.1-2.1.2.2" class="pilcrow">¶</a>
 </li>
             </ul>
 </li>
-          <li class="normal" id="section-9.1-2.2">Hash: SHA-512, and Nh = 64.<a href="#section-9.1-2.2" class="pilcrow">¶</a>
+          <li class="normal" id="section-9.1-2.2">Hash (<code>H</code>): SHA-512, and Nh = 64.<a href="#section-9.1-2.2" class="pilcrow">¶</a>
 </li>
         </ul>
 </section>
@@ -2170,7 +2183,7 @@ and in little-endian order.<a href="#section-9.1-2.1.2.2" class="pilcrow">¶</a>
         <h3 id="name-frostp-256-sha-256">
 <a href="#section-9.2" class="section-number selfRef">9.2. </a><a href="#name-frostp-256-sha-256" class="section-name selfRef">FROST(P-256, SHA-256)</a>
         </h3>
-<p id="section-9.2-1">This ciphersuite uses P-256 for the Group and SHA-256 for the Hash function.
+<p id="section-9.2-1">This ciphersuite uses P-256 for the Group and SHA-256 for the Hash function <code>H</code>.
 The value of the contextString parameter is "FROST-P256-SHA256".<a href="#section-9.2-1" class="pilcrow">¶</a></p>
 <ul class="normal">
 <li class="normal" id="section-9.2-2.1">
@@ -2185,7 +2198,7 @@ prime modulus equal to <code>Order()</code>.<a href="#section-9.2-2.1.2.1" class
 </li>
             </ul>
 </li>
-          <li class="normal" id="section-9.2-2.2">Hash: SHA-256, and Nh = 32.<a href="#section-9.2-2.2" class="pilcrow">¶</a>
+          <li class="normal" id="section-9.2-2.2">Hash (<code>H</code>): SHA-256, and Nh = 32.<a href="#section-9.2-2.2" class="pilcrow">¶</a>
 </li>
         </ul>
 </section>
@@ -2373,7 +2386,7 @@ operation can be performed.<a href="#appendix-B-1" class="pilcrow">¶</a></p>
     s = RandomScalar()
     points = secret_share_split(s, n, t)
     secret_keys = []
-      sk_i = (i, points[i])
+    sk_i = (i, points[i])
     secret_keys.append(sk_i)
     public_key = ScalarBaseMult(s)
     return secret_keys, public_key
