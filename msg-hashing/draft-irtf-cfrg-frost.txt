@@ -5,12 +5,12 @@
 CFRG                                                         D. Connolly
 Internet-Draft                                          Zcash Foundation
 Intended status: Informational                                  C. Komlo
-Expires: 17 July 2022           University of Waterloo, Zcash Foundation
+Expires: 1 August 2022          University of Waterloo, Zcash Foundation
                                                              I. Goldberg
                                                   University of Waterloo
                                                                C.A. Wood
                                                               Cloudflare
-                                                         13 January 2022
+                                                         28 January 2022
 
 
                Two-Round Threshold Signatures with FROST
@@ -55,7 +55,7 @@ Status of This Memo
    time.  It is inappropriate to use Internet-Drafts as reference
    material or to cite them other than as "work in progress."
 
-   This Internet-Draft will expire on 17 July 2022.
+   This Internet-Draft will expire on 1 August 2022.
 
 Copyright Notice
 
@@ -385,7 +385,9 @@ Table of Contents
 
    and
 
-   H3(m) = H(m)
+H3(m) = H(m)
+
+Normally this would also include a domain separator, but for backwards compatibility with other Schnorr signatures, we omit it here.
 
    The variable contextString is unique for each ciphersuite defined in
    Section 9.
