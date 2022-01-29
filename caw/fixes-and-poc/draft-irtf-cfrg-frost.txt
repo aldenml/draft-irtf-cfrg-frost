@@ -5,12 +5,12 @@
 CFRG                                                         D. Connolly
 Internet-Draft                                          Zcash Foundation
 Intended status: Informational                                  C. Komlo
-Expires: 31 July 2022           University of Waterloo, Zcash Foundation
+Expires: 2 August 2022          University of Waterloo, Zcash Foundation
                                                              I. Goldberg
                                                   University of Waterloo
                                                                C.A. Wood
                                                               Cloudflare
-                                                         27 January 2022
+                                                         29 January 2022
 
 
                Two-Round Threshold Signatures with FROST
@@ -55,7 +55,7 @@ Status of This Memo
    time.  It is inappropriate to use Internet-Drafts as reference
    material or to cite them other than as "work in progress."
 
-   This Internet-Draft will expire on 31 July 2022.
+   This Internet-Draft will expire on 2 August 2022.
 
 Copyright Notice
 
@@ -364,15 +364,16 @@ Table of Contents
    BE used in practice, see Section 9.  By construction, the hash
    functions inputs MUST be smaller than 2^64 bits.
 
-   Using H, we introduce two separate domain-separated hashes, H1 and
-   H2.  These hash functions differ per parameter set, so H1 and H2 will
-   differ between instantiations of the protocol as follows:
+   Using H, we introduce two separate domain-separated hashes, H1, H2,
+   and H3.  These hash functions differ per parameter set, so H1, H2,
+   and H3 differ between instantiations of the protocol as follows:
 
    H1(m) = H(contextString || "rho" || I2OSP(len(m), 8) || m)
-
-   and
-
    H2(m) = H(contextString || "chal" || I2OSP(len(m), 8) || m)
+   H3(m) = H(m)
+
+   Normally H3 would also include a domain separator, but for backwards
+   compatibility with [RFC8032], it is omitted here.
 
    The variable contextString is unique for each ciphersuite defined in
    Section 9.
@@ -395,40 +396,51 @@ Table of Contents
    In the single-party setting, a Schnorr signature is generated with
    the following operation.
 
-     schnorr_signature_generate(msg, SK):
+  schnorr_signature_generate(msg, SK):
 
-     Inputs:
-     - msg, message to be signed, an octet string
-     - SK, private key, a scalar
-     - PK, public key, a group element
+  Inputs:
+  - msg, message to be signed, an octet string
+  - SK, private key, a scalar
+  - PK, public key, a group element
 
-     Outputs: signature (R, z), a pair of scalar values
+  Outputs: signature (R, z), a pair of scalar values
 
-     def schnorr_signature_generate(msg, SK, PK):
-       r = G.RandomScalar()
-       R = G.ScalarBaseMult(r)
-       c = H2(R, PK, msg)
-       z = r + (c * SK)
-       return (R, z)
+  def schnorr_signature_generate(msg, SK, PK):
+    r = G.RandomScalar()
+    R = G.ScalarBaseMult(r)
+
+    msg_hash = H3(msg)
+    comm_enc = G.SerializeElement(R)
+    pk_enc = G.SerializeElement(PK)
+    challenge_input = group_comm_enc || group_public_key_enc || msg_hash
+    c = H2(challenge_input)
+
+    z = r + (c * SK)
+    return (R, z)
 
    The corresponding verification operation is as follows.
 
-   schnorr_signature_verify(msg, sig, PK):
+  schnorr_signature_verify(msg, sig, PK):
 
-   Inputs:
-   - msg, signed message, an octet string
-   - sig, a tuple (R, z) output from schnorr_signature_generate or FROST
-   - PK, public key, a group element
+  Inputs:
+  - msg, signed message, an octet string
+  - sig, a tuple (R, z) output from schnorr_signature_generate or FROST
+  - PK, public key, a group element
 
-   Outputs: 1 if signature is valid, and 0 otherwise
+  Outputs: 1 if signature is valid, and 0 otherwise
 
-   def schnorr_signature_verify(msg, sig = (R, z), PK):
-     c = H2(R, PK, msg)
-     l = ScalarBaseMult(z)
-     r = R + (c * PK)
-     if l == r:
-       return 1
-     return 0
+  def schnorr_signature_verify(msg, sig = (R, z), PK):
+    msg_hash = H3(msg)
+    comm_enc = G.SerializeElement(R)
+    pk_enc = G.SerializeElement(PK)
+    challenge_input = group_comm_enc || group_public_key_enc || msg_hash
+    c = H2(challenge_input)
+
+    l = ScalarBaseMult(z)
+    r = R + (c * PK)
+    if l == r:
+      return 1
+    return 0
 
 7.2.  Polynomial Operations
 
@@ -520,14 +532,14 @@ Table of Contents
    functions.
 
   Inputs:
-  - B = [(j, D_j, E_j), ...], a list of commitments issued by each signer,
+  - commitment_list = [(j, D_j, E_j), ...], a list of commitments issued by each signer,
     where each element in the list indicates the signer index and their
     two commitment Element values. B MUST be sorted in ascending order
     by signer index.
 
   Outputs: A byte string containing the serialized representation of B.
 
-  def encode_group_commitment_shares(B):
+  def encode_group_commitment_list(commitment_list):
     encoded_group_commitment = nil
     for (j, D_j, E_j) in B:
       encoded_commitment = I2OSP(j, 4) || G.SerializeElement(D_j) || G.SerializeElement(E_j)
@@ -629,8 +641,8 @@ Table of Contents
   - group_public_key, public key corresponding to the signer secret key share.
   - nonce_i, pair of Scalar values (d, e) generated in round one.
   - comm_i, pair of Element values (D, E) generated in round one.
-  - m, the message to be signed (sent by the Coordinator).
-  - B = [(j, D_j, E_j), ...], a list of commitments issued by each signer,
+  - msg, the message to be signed (sent by the Coordinator).
+  - commitment_list = [(j, D_j, E_j), ...], a list of commitments issued by each signer,
     where each element in the list indicates the signer index and their
     two commitment Element values. B MUST be sorted in ascending order
     by signer index.
@@ -639,9 +651,9 @@ Table of Contents
 
   Outputs: a signature share z_i and commitment share R_i
 
-  def frost_sign(index, sk, group_public_key, nonce, comm, m, B, L):
+  def frost_sign(index, sk, group_public_key, nonce, comm, msg, commitment_list, L):
     # Compute the blinding factor
-    encoded_commitments = encode_group_commitment_shares(B)
+    encoded_commitments = encode_group_commitment_list(commitment_list)
     blinding_factor = H1(encoded_commitments)
 
     # Compute the group commitment
@@ -652,9 +664,10 @@ Table of Contents
     lambda_i = derive_lagrange_coefficient(index, L)
 
     # Compute the per-message challenge
+    msg_hash = H3(msg)
     group_comm_enc = G.SerializeElement(R)
     group_public_key_enc = G.SerializeElement(group_public_key)
-    challenge_input = group_comm_enc || group_public_key_enc || m)
+    challenge_input = group_comm_enc || group_public_key_enc || msg_hash
     c = H2(challenge_input)
 
     # Compute the signature share
@@ -681,16 +694,17 @@ Table of Contents
   - z_i, the signature share for the ith signer, computed from the signer
   - R_i, the commitment for the ith signer, computed from the signer
   - R, the group commitment
-  - m, the message to be signed
+  - msg, the message to be signed
   - L, a set containing identifiers for each signer, similarly of length
     NUM_SIGNERS (sent by the Coordinator).
 
   Outputs: 1 if the signature share is valid, and 0 otherwise
 
-  def frost_verify_signature_share(index, PK, PK_i, z_i, R_i, R, m, L):
+  def frost_verify_signature_share(index, PK, PK_i, z_i, R_i, R, msg, L):
+    msg_hash = H3(msg)
     group_comm_enc = G.SerializeElement(R)
     group_public_key_enc = G.SerializeElement(group_public_key)
-    challenge_input = group_comm_enc || group_public_key_enc || m)
+    challenge_input = group_comm_enc || group_public_key_enc || msg_hash
     c = H2(challenge_input)
 
     l = G.ScalarbaseMult(z_i)
@@ -735,7 +749,7 @@ Table of Contents
 9.1.  FROST(ristretto255, SHA-512)
 
    This ciphersuite uses ristretto255 for the Group and SHA-512 for the
-   Hash function.  The value of the contextString parameter is "FROST-
+   Hash function H.  The value of the contextString parameter is "FROST-
    RISTRETTO255-SHA512".
 
    *  Group: ristretto255 [RISTRETTO]
@@ -750,12 +764,12 @@ Table of Contents
          'Decode' functions from [RISTRETTO].  For scalars, ensure they
          are fully reduced modulo Order() and in little-endian order.
 
-   *  Hash: SHA-512, and Nh = 64.
+   *  Hash (H): SHA-512, and Nh = 64.
 
 9.2.  FROST(P-256, SHA-256)
 
    This ciphersuite uses P-256 for the Group and SHA-256 for the Hash
-   function.  The value of the contextString parameter is "FROST-
+   function H.  The value of the contextString parameter is "FROST-
    P256-SHA256".
 
    *  Group: P-256 (secp256r1) [x9.62]
@@ -767,7 +781,7 @@ Table of Contents
 
       -  Serialization: Elements are serialized as Ne = 33 byte string
 
-   *  Hash: SHA-256, and Nh = 32.
+   *  Hash (H): SHA-256, and Nh = 32.
 
 10.  Security Considerations
 
@@ -890,6 +904,11 @@ Table of Contents
               "PKCS #1: RSA Cryptography Specifications Version 2.2",
               RFC 8017, DOI 10.17487/RFC8017, November 2016,
               <https://www.rfc-editor.org/rfc/rfc8017>.
+
+   [RFC8032]  Josefsson, S. and I. Liusvaara, "Edwards-Curve Digital
+              Signature Algorithm (EdDSA)", RFC 8032,
+              DOI 10.17487/RFC8032, January 2017,
+              <https://www.rfc-editor.org/rfc/rfc8032>.
 
    [RFC8174]  Leiba, B., "Ambiguity of Uppercase vs Lowercase in RFC
               2119 Key Words", BCP 14, RFC 8174, DOI 10.17487/RFC8174,
