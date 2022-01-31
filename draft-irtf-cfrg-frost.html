@@ -1420,7 +1420,8 @@ messages is in <a href="#frost-spec" class="xref">Section 8</a>.<a href="#sectio
 <li class="normal" id="section-5-2.1">A participant is an entity that is trusted to hold a secret share.<a href="#section-5-2.1" class="pilcrow">¶</a>
 </li>
         <li class="normal" id="section-5-2.2">
-          <code>NUM_SIGNERS</code> denotes the number of participants, and the number of shares that <code>s</code> is split into.<a href="#section-5-2.2" class="pilcrow">¶</a>
+          <code>NUM_SIGNERS</code> denotes the number of participants, and the number of shares that <code>s</code> is split into.
+This value MUST NOT exceed 2^16-1.<a href="#section-5-2.2" class="pilcrow">¶</a>
 </li>
         <li class="normal" id="section-5-2.3">
           <code>THRESHOLD_LIMIT</code> denotes the threshold number of participants required to issue a signature. More specifically,
@@ -1773,7 +1774,9 @@ structures into values that can be processed with hash functions.<a href="#secti
   def encode_group_commitment_list(commitment_list):
     encoded_group_commitment = nil
     for (j, D_j, E_j) in B:
-      encoded_commitment = I2OSP(j, 4) || G.SerializeElement(D_j) || G.SerializeElement(E_j)
+      encoded_commitment = I2OSP(j, 2) ||
+                           G.SerializeElement(D_j) ||
+                           G.SerializeElement(E_j)
       encoded_group_commitment = encoded_group_commitment || encoded_commitment
     return encoded_group_commitment
 </pre><a href="#section-7.3-2" class="pilcrow">¶</a>
