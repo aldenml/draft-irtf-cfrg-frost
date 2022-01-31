@@ -5,12 +5,12 @@
 CFRG                                                         D. Connolly
 Internet-Draft                                          Zcash Foundation
 Intended status: Informational                                  C. Komlo
-Expires: 2 August 2022          University of Waterloo, Zcash Foundation
+Expires: 4 August 2022          University of Waterloo, Zcash Foundation
                                                              I. Goldberg
                                                   University of Waterloo
                                                                C.A. Wood
                                                               Cloudflare
-                                                         29 January 2022
+                                                         31 January 2022
 
 
                Two-Round Threshold Signatures with FROST
@@ -55,7 +55,7 @@ Status of This Memo
    time.  It is inappropriate to use Internet-Drafts as reference
    material or to cite them other than as "work in progress."
 
-   This Internet-Draft will expire on 2 August 2022.
+   This Internet-Draft will expire on 4 August 2022.
 
 Copyright Notice
 
@@ -608,7 +608,7 @@ Table of Contents
 
     Outputs: (nonce, comm), a tuple of nonce and nonce commitment pairs.
 
-    def frost_commit():
+    def commit():
       d = G.RandomScalar()
       e = G.RandomScalar()
       D = G.ScalarBaseMult(d)
@@ -646,12 +646,12 @@ Table of Contents
     where each element in the list indicates the signer index and their
     two commitment Element values. B MUST be sorted in ascending order
     by signer index.
-  - L, a set containing identifiers for each signer, similarly of length
+  - participant_list, a set containing identifiers for each signer, similarly of length
     NUM_SIGNERS (sent by the Coordinator).
 
   Outputs: a signature share z_i and commitment share R_i
 
-  def frost_sign(index, sk, group_public_key, nonce, comm, msg, commitment_list, L):
+  def sign(index, sk, group_public_key, nonce, comm, msg, commitment_list, participant_list):
     # Compute the blinding factor
     encoded_commitments = encode_group_commitment_list(commitment_list)
     blinding_factor = H1(encoded_commitments)
@@ -661,7 +661,7 @@ Table of Contents
     for (_, D_i, E_i) in B:
       R = R + (D_i + (E_i * blinding_factor))
 
-    lambda_i = derive_lagrange_coefficient(index, L)
+    lambda_i = derive_lagrange_coefficient(index, participant_list)
 
     # Compute the per-message challenge
     msg_hash = H3(msg)
@@ -684,8 +684,8 @@ Table of Contents
    commitment share.  Each signer then sends these shares back to the
    collector; see Appendix C.3 for encoding recommendations.
 
-   Given a set of signature shares, the Coordinator MAY elect to verify
-   these using the following procedure.
+   The Coordinator MUST verify the set of signature shares using the
+   following procedure.
 
   Inputs:
   - index, Index `i` of the signer. Note index will never equal `0`.
@@ -695,12 +695,12 @@ Table of Contents
   - R_i, the commitment for the ith signer, computed from the signer
   - R, the group commitment
   - msg, the message to be signed
-  - L, a set containing identifiers for each signer, similarly of length
+  - participant_list, a set containing identifiers for each signer, similarly of length
     NUM_SIGNERS (sent by the Coordinator).
 
   Outputs: 1 if the signature share is valid, and 0 otherwise
 
-  def frost_verify_signature_share(index, PK, PK_i, z_i, R_i, R, msg, L):
+  def verify_signature_share(index, PK, PK_i, z_i, R_i, R, msg, participant_list):
     msg_hash = H3(msg)
     group_comm_enc = G.SerializeElement(R)
     group_public_key_enc = G.SerializeElement(group_public_key)
@@ -709,7 +709,7 @@ Table of Contents
 
     l = G.ScalarbaseMult(z_i)
 
-    lambda_i = derive_lagrange_coefficient(index, L)
+    lambda_i = derive_lagrange_coefficient(index, participant_list)
     r = R_i + (z_i * c * lambda_i)
 
     return l == r
