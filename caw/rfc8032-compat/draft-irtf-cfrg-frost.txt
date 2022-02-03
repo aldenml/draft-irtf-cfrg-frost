@@ -352,9 +352,9 @@ Table of Contents
    BE used in practice, see Section 9.  Using H, we introduce three
    separate domain-separated hashes, H1, H2, and H3, where H1 and H2 map
    arbitrary inputs to non-zero Scalar elements of the prime-order group
-   scalar field, and H3 is an alias for H.  The details of H1, H2, and
-   H3 vary based on ciphersuite.  See Section 9 for more details about
-   each.
+   scalar field, and H3 is an alias for H with domain separation
+   applied.  The details of H1, H2, and H3 vary based on ciphersuite.
+   See Section 9 for more details about each.
 
 7.  Helper functions
 
