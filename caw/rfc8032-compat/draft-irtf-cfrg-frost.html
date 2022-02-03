@@ -1215,10 +1215,13 @@ participant is malicious.<a href="#section-abstract-1" class="pilcrow">¶</a></p
             <p id="section-toc.1-1.9.1"><a href="#section-9" class="xref">9</a>.  <a href="#name-ciphersuites" class="xref">Ciphersuites</a></p>
 <ul class="compact toc ulBare ulEmpty">
 <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.9.2.1">
-                <p id="section-toc.1-1.9.2.1.1"><a href="#section-9.1" class="xref">9.1</a>.  <a href="#name-frostristretto255-sha-512" class="xref">FROST(ristretto255, SHA-512)</a></p>
+                <p id="section-toc.1-1.9.2.1.1"><a href="#section-9.1" class="xref">9.1</a>.  <a href="#name-frostedwards25519-sha-512" class="xref">FROST(edwards25519, SHA-512)</a></p>
 </li>
               <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.9.2.2">
-                <p id="section-toc.1-1.9.2.2.1"><a href="#section-9.2" class="xref">9.2</a>.  <a href="#name-frostp-256-sha-256" class="xref">FROST(P-256, SHA-256)</a></p>
+                <p id="section-toc.1-1.9.2.2.1"><a href="#section-9.2" class="xref">9.2</a>.  <a href="#name-frostristretto255-sha-512" class="xref">FROST(ristretto255, SHA-512)</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.9.2.3">
+                <p id="section-toc.1-1.9.2.3.1"><a href="#section-9.3" class="xref">9.3</a>.  <a href="#name-frostp-256-sha-256" class="xref">FROST(P-256, SHA-256)</a></p>
 </li>
             </ul>
 </li>
@@ -1494,31 +1497,18 @@ We denote equality comparison as <code>==</code> and assignment of values by <co
 </li>
           <li class="normal" id="section-6.1-3.2">Identity(): Outputs the identity element of the group (i.e. <code>I</code>).<a href="#section-6.1-3.2" class="pilcrow">¶</a>
 </li>
-          <li class="normal" id="section-6.1-3.3">HashToScalar(x): A member function of <code>G</code> that deterministically maps
-an array of bytes <code>x</code> to an element in GF(p). This function is optionally
-parameterized by a DST.<a href="#section-6.1-3.3" class="pilcrow">¶</a>
+          <li class="normal" id="section-6.1-3.3">RandomScalar(): A member function of <code>G</code> that chooses at random a
+non-zero element in GF(p).<a href="#section-6.1-3.3" class="pilcrow">¶</a>
 </li>
-          <li class="normal" id="section-6.1-3.4">RandomScalar(): A member function of <code>G</code> that chooses at random a
-non-zero element in GF(p).<a href="#section-6.1-3.4" class="pilcrow">¶</a>
-</li>
-          <li class="normal" id="section-6.1-3.5">SerializeElement(A): A member function of <code>G</code> that maps a group element <code>A</code>
+          <li class="normal" id="section-6.1-3.4">SerializeElement(A): A member function of <code>G</code> that maps a group element <code>A</code>
 to a unique byte array <code>buf</code> of fixed length <code>Ne</code>. The output type of
-this function is <code>SerializedElement</code>.<a href="#section-6.1-3.5" class="pilcrow">¶</a>
+this function is <code>SerializedElement</code>.<a href="#section-6.1-3.4" class="pilcrow">¶</a>
 </li>
-          <li class="normal" id="section-6.1-3.6">DeserializeElement(buf): A member function of <code>G</code> that maps a byte array
+          <li class="normal" id="section-6.1-3.5">DeserializeElement(buf): A member function of <code>G</code> that maps a byte array
 <code>buf</code> to a group element <code>A</code>, or fails if the input is not a valid
 byte representation of an element. This function can raise a
 DeserializeError if deserialization fails or <code>A</code> is the identity element
-of the group; see <a href="#input-validation" class="xref">Section 6.1.1</a>.<a href="#section-6.1-3.6" class="pilcrow">¶</a>
-</li>
-          <li class="normal" id="section-6.1-3.7">SerializeScalar(s): A member function of <code>G</code> that maps a scalar element <code>s</code>
-to a unique byte array <code>buf</code> of fixed length <code>Ns</code>. The output type of this
-function is <code>SerializedScalar</code>.<a href="#section-6.1-3.7" class="pilcrow">¶</a>
-</li>
-          <li class="normal" id="section-6.1-3.8">DeserializeScalar(buf): A member function of <code>G</code> that maps a byte array
-<code>buf</code> to a scalar <code>s</code>, or fails if the input is not a valid byte
-representation of a scalar. This function can raise a
-DeserializeError if deserialization fails; see <a href="#input-validation" class="xref">Section 6.1.1</a>.<a href="#section-6.1-3.8" class="pilcrow">¶</a>
+of the group; see <a href="#input-validation" class="xref">Section 6.1.1</a>.<a href="#section-6.1-3.5" class="pilcrow">¶</a>
 </li>
         </ul>
 <div id="input-validation">
@@ -1551,21 +1541,11 @@ little-endian integer, is a value greater than or equal to 0, and less than <cod
 <p id="section-6.2-1">FROST requires the use of a cryptographically secure hash function, generically
 written as H, which functions effectively as a random oracle. For concrete
 recommendations on hash functions which SHOULD BE used in practice, see
-<a href="#ciphersuites" class="xref">Section 9</a>. By construction, the hash functions inputs MUST be smaller
-than 2^64 bits.<a href="#section-6.2-1" class="pilcrow">¶</a></p>
-<p id="section-6.2-2">Using H, we introduce two separate domain-separated hashes, H1, H2, and H3.
-These hash functions differ per parameter set, so H1, H2, and H3 differ
-between instantiations of the protocol as follows:<a href="#section-6.2-2" class="pilcrow">¶</a></p>
-<div class="alignLeft art-text artwork" id="section-6.2-3">
-<pre>
-H1(m) = H(contextString || "rho" || I2OSP(len(m), 8) || m)
-H2(m) = H(contextString || "chal" || I2OSP(len(m), 8) || m)
-H3(m) = H(m)
-</pre><a href="#section-6.2-3" class="pilcrow">¶</a>
-</div>
-<p id="section-6.2-4">Normally H3 would also include a domain separator, but for backwards compatibility
-with <span>[<a href="#RFC8032" class="xref">RFC8032</a>]</span>, it is omitted here.<a href="#section-6.2-4" class="pilcrow">¶</a></p>
-<p id="section-6.2-5">The variable contextString is unique for each ciphersuite defined in <a href="#ciphersuites" class="xref">Section 9</a>.<a href="#section-6.2-5" class="pilcrow">¶</a></p>
+<a href="#ciphersuites" class="xref">Section 9</a>. Using H, we introduce three separate domain-separated hashes,
+H1, H2, and H3, where H1 and H2 map arbitrary inputs to non-zero Scalar elements of
+the prime-order group scalar field, and H3 is an alias for H. The details of
+H1, H2, and H3 vary based on ciphersuite. See <a href="#ciphersuites" class="xref">Section 9</a> for more details
+about each.<a href="#section-6.2-1" class="pilcrow">¶</a></p>
 </section>
 </div>
 </section>
@@ -1764,19 +1744,19 @@ structures into values that can be processed with hash functions.<a href="#secti
 <div class="alignLeft art-text artwork" id="section-7.3-2">
 <pre>
   Inputs:
-  - commitment_list = [(j, D_j, E_j), ...], a list of commitments issued by each signer,
+  - commitment_list = [(i, x, y), ...], a list of commitments issued by each signer,
     where each element in the list indicates the signer index and their
-    two commitment Element values. B MUST be sorted in ascending order
+    two commitment Element values (x, y). This list MUST be sorted in ascending order
     by signer index.
 
-  Outputs: A byte string containing the serialized representation of B.
+  Outputs: A byte string containing the serialized representation of commitment_list.
 
   def encode_group_commitment_list(commitment_list):
     encoded_group_commitment = nil
-    for (j, D_j, E_j) in B:
-      encoded_commitment = I2OSP(j, 2) ||
-                           G.SerializeElement(D_j) ||
-                           G.SerializeElement(E_j)
+    for (index, hiding_nonce_commitment, blinding_nonce_commitment) in commitment_list:
+      encoded_commitment = I2OSP(index, 2) ||
+                           G.SerializeElement(hiding_nonce_commitment) ||
+                           G.SerializeElement(blinding_nonce_commitment)
       encoded_group_commitment = encoded_group_commitment || encoded_commitment
     return encoded_group_commitment
 </pre><a href="#section-7.3-2" class="pilcrow">¶</a>
@@ -1832,8 +1812,8 @@ signature; see <a href="#sec-considerations" class="xref">Section 10</a>.<a href
         </h3>
 <p id="section-8.1-1">Round one involves each signer generating a pair of nonces and their corresponding public
 commitments. A nonce is a pair of Scalar values, and a commitment is a pair of Element values.<a href="#section-8.1-1" class="pilcrow">¶</a></p>
-<p id="section-8.1-2">Each signer in round one generates a nonce <code>nonce = (d, e)</code> and commitment
-<code>comm = (D, E)</code> for each signer.<a href="#section-8.1-2" class="pilcrow">¶</a></p>
+<p id="section-8.1-2">Each signer in round one generates a nonce <code>nonce = (hiding_nonce, blinding_nonce)</code> and commitment
+<code>comm = (hiding_nonce_commitment, blinding_nonce_commitment)</code> for each signer.<a href="#section-8.1-2" class="pilcrow">¶</a></p>
 <div class="alignLeft art-text artwork" id="section-8.1-3">
 <pre>
   Inputs: None
@@ -1841,16 +1821,16 @@ commitments. A nonce is a pair of Scalar values, and a commitment is a pair of E
   Outputs: (nonce, comm), a tuple of nonce and nonce commitment pairs.
 
   def commit():
-    d = G.RandomScalar()
-    e = G.RandomScalar()
-    D = G.ScalarBaseMult(d)
-    E = G.ScalarBaseMult(e)
-    nonce = (d, e)
-    comm = (D, E)
-    return nonce, comm
+    hiding_nonce = G.RandomScalar()
+    blinding_nonce = G.RandomScalar()
+    hiding_nonce_commitment = G.ScalarBaseMult(hiding_nonce)
+    blinding_nonce_commitment = G.ScalarBaseMult(blinding_nonce)
+    nonce = (hiding_nonce, blinding_nonce)
+    comm = (hiding_nonce_commitment, blinding_nonce_commitment)
+    return (nonce, comm)
 </pre><a href="#section-8.1-3" class="pilcrow">¶</a>
 </div>
-<p id="section-8.1-4">The output <code>nonce</code> from Participant <code>P_i</code> is stored locally and kept private
+<p id="section-8.1-4">The private output <code>nonce</code> from Participant <code>P_i</code> is stored locally and kept private
 for use in the second round. The public output <code>comm</code> from Participant <code>P_i</code>
 is sent to the Coordinator; see <a href="#encode-commitment" class="xref">Appendix C.1</a> for encoding recommendations.<a href="#section-8.1-4" class="pilcrow">¶</a></p>
 </section>
@@ -1876,14 +1856,15 @@ each Signer then runs the following procedure to produce its own signature share
   - nonce_i, pair of Scalar values (d, e) generated in round one.
   - comm_i, pair of Element values (D, E) generated in round one.
   - msg, the message to be signed (sent by the Coordinator).
-  - commitment_list = [(j, D_j, E_j), ...], a list of commitments issued by each signer,
+  - commitment_list = [(j, x, y), ...], a list of commitments issued by each signer,
     where each element in the list indicates the signer index and their
-    two commitment Element values. B MUST be sorted in ascending order
+    two commitment Element values (x, y). This list MUST be sorted in ascending order
     by signer index.
   - participant_list, a set containing identifiers for each signer, similarly of length
     NUM_SIGNERS (sent by the Coordinator).
 
-  Outputs: a signature share z_i and commitment share R_i
+  Outputs: a signature share sig_share and commitment share comm_share, which
+           are Element and Scalar values respectively.
 
   def sign(index, sk, group_public_key, nonce, comm, msg, commitment_list, participant_list):
     # Compute the blinding factor
@@ -1893,8 +1874,8 @@ each Signer then runs the following procedure to produce its own signature share
 
     # Compute the group commitment
     R = G.Identity()
-    for (_, D_i, E_i) in B:
-      R = R + (D_i + (E_i * blinding_factor))
+    for (_, hiding_nonce_commitment, blinding_nonce_commitment) in B:
+      R = R + (hiding_nonce_commitment + (blinding_nonce_commitment * blinding_factor))
 
     lambda_i = derive_lagrange_coefficient(index, participant_list)
 
@@ -1903,17 +1884,17 @@ each Signer then runs the following procedure to produce its own signature share
     group_comm_enc = G.SerializeElement(R)
     group_public_key_enc = G.SerializeElement(group_public_key)
     challenge_input = group_comm_enc || group_public_key_enc || msg_hash
-    c = H2(challenge_input)
+    c = H(challenge_input)
 
     # Compute the signature share
-    (d, e) = nonce_i
-    z_i = d + (e * blinding_factor) + (lambda_i * sk_i * c)
+    (hiding_nonce, blinding_nonce) = nonce_i
+    sig_share = hiding_nonce + (blinding_nonce * blinding_factor) + (lambda_i * sk_i * c)
 
     # Compute the commitment share
-    (D, E) = comm_i
-    R_i = D + (E * blinding_factor)
+    (hiding_nonce_commitment, blinding_nonce_commitment) = comm_i
+    comm_share = hiding_nonce_commitment + (blinding_nonce_commitment * blinding_factor)
 
-    return z_i, R_i
+    return sig_share, comm_share
 </pre><a href="#section-8.2-3" class="pilcrow">¶</a>
 </div>
 <p id="section-8.2-4">The output of this procedure is a signature share and group commitment share.
@@ -1926,26 +1907,26 @@ Each signer then sends these shares back to the collector; see
   - index, Index `i` of the signer. Note index will never equal `0`.
   - PK, the public key for the group
   - PK_i, the public key for the ith signer, where PK_i = ScalarBaseMult(s[i])
-  - z_i, the signature share for the ith signer, computed from the signer
-  - R_i, the commitment for the ith signer, computed from the signer
+  - sig_share, the signature share for the ith signer, computed from the signer
+  - comm_share, the commitment for the ith signer, computed from the signer
   - R, the group commitment
   - msg, the message to be signed
   - participant_list, a set containing identifiers for each signer, similarly of length
     NUM_SIGNERS (sent by the Coordinator).
 
-  Outputs: 1 if the signature share is valid, and 0 otherwise
+  Outputs: 1 if the signature share is valid, and 0 otherwise.
 
-  def verify_signature_share(index, PK, PK_i, z_i, R_i, R, msg, participant_list):
+  def verify_signature_share(index, PK, PK_i, sig_share, comm_share, R, msg, participant_list):
     msg_hash = H3(msg)
     group_comm_enc = G.SerializeElement(R)
     group_public_key_enc = G.SerializeElement(group_public_key)
     challenge_input = group_comm_enc || group_public_key_enc || msg_hash
-    c = H2(challenge_input)
+    c = H(challenge_input)
 
-    l = G.ScalarbaseMult(z_i)
+    l = G.ScalarbaseMult(sig_share)
 
     lambda_i = derive_lagrange_coefficient(index, participant_list)
-    r = R_i + (z_i * c * lambda_i)
+    r = comm_share + (sig_share * c * lambda_i)
 
     return l == r
 </pre><a href="#section-8.2-6" class="pilcrow">¶</a>
@@ -1991,56 +1972,117 @@ shares can do so using the <code>verify_signature_share</code> function in <a hr
 <p id="section-9-1">A FROST ciphersuite must specify the underlying prime-order group details
 and cryptographic hash function. Each ciphersuite is denoted as (Group, Hash),
 e.g., (ristretto255, SHA-512). This section contains some ciphersuites.
-The RECOMMENDED ciphersuite is (ristretto255, SHA-512) <a href="#recommended-suite" class="xref">Section 9.1</a>.<a href="#section-9-1" class="pilcrow">¶</a></p>
-<div id="recommended-suite">
+The RECOMMENDED ciphersuite is (ristretto255, SHA-512) <a href="#recommended-suite" class="xref">Section 9.2</a>.
+The (edwards25519, SHA-512) ciphersuite is included for backwards compatibility
+with <span>[<a href="#RFC8032" class="xref">RFC8032</a>]</span>.<a href="#section-9-1" class="pilcrow">¶</a></p>
+<div id="frostedwards25519-sha-512">
 <section id="section-9.1">
-        <h3 id="name-frostristretto255-sha-512">
-<a href="#section-9.1" class="section-number selfRef">9.1. </a><a href="#name-frostristretto255-sha-512" class="section-name selfRef">FROST(ristretto255, SHA-512)</a>
+        <h3 id="name-frostedwards25519-sha-512">
+<a href="#section-9.1" class="section-number selfRef">9.1. </a><a href="#name-frostedwards25519-sha-512" class="section-name selfRef">FROST(edwards25519, SHA-512)</a>
         </h3>
-<p id="section-9.1-1">This ciphersuite uses ristretto255 for the Group and SHA-512 for the Hash function <code>H</code>.
-The value of the contextString parameter is "FROST-RISTRETTO255-SHA512".<a href="#section-9.1-1" class="pilcrow">¶</a></p>
+<p id="section-9.1-1">This ciphersuite uses edwards25519 for the Group and SHA-512 for the Hash function <code>H</code>
+meant to produce signatures indistinguishable from Ed25519 as specified in <span>[<a href="#RFC8032" class="xref">RFC8032</a>]</span>.
+The value of the contextString parameter is empty.<a href="#section-9.1-1" class="pilcrow">¶</a></p>
 <ul class="normal">
 <li class="normal" id="section-9.1-2.1">
-            <p id="section-9.1-2.1.1">Group: ristretto255 <span>[<a href="#RISTRETTO" class="xref">RISTRETTO</a>]</span><a href="#section-9.1-2.1.1" class="pilcrow">¶</a></p>
+            <p id="section-9.1-2.1.1">Group: ed25519 <span>[<a href="#RFC8032" class="xref">RFC8032</a>]</span><a href="#section-9.1-2.1.1" class="pilcrow">¶</a></p>
 <ul class="normal">
-<li class="normal" id="section-9.1-2.1.2.1">HashToScalar(): Compute <code>uniform_bytes</code> using <code>expand_message</code> = <code>expand_message_xmd</code>,
-DST = "HashToScalar-" || contextString, and output length 64, interpret
-<code>uniform_bytes</code> as a 512-bit integer in little-endian order, and reduce the integer
-modulo <code>Order()</code>.<a href="#section-9.1-2.1.2.1" class="pilcrow">¶</a>
+<li class="normal" id="section-9.1-2.1.2.1">SerializeElement: Implemented as specified in <span>[<a href="#RFC8032" class="xref">RFC8032</a>], <a href="https://rfc-editor.org/rfc/rfc8032#section-5.1.2" class="relref">Section 5.1.2</a></span>.<a href="#section-9.1-2.1.2.1" class="pilcrow">¶</a>
 </li>
-              <li class="normal" id="section-9.1-2.1.2.2">Serialization: Both group elements and scalars are encoded in Ne = Ns = 32
-bytes. For group elements, use the 'Encode' and 'Decode' functions from
-<span>[<a href="#RISTRETTO" class="xref">RISTRETTO</a>]</span>. For scalars, ensure they are fully reduced modulo <code>Order()</code>
-and in little-endian order.<a href="#section-9.1-2.1.2.2" class="pilcrow">¶</a>
+              <li class="normal" id="section-9.1-2.1.2.2">DeserializeElement: Implemented as specified in <span>[<a href="#RFC8032" class="xref">RFC8032</a>], <a href="https://rfc-editor.org/rfc/rfc8032#section-5.1.3" class="relref">Section 5.1.3</a></span>.<a href="#section-9.1-2.1.2.2" class="pilcrow">¶</a>
 </li>
             </ul>
 </li>
-          <li class="normal" id="section-9.1-2.2">Hash (<code>H</code>): SHA-512, and Nh = 64.<a href="#section-9.1-2.2" class="pilcrow">¶</a>
+          <li class="normal" id="section-9.1-2.2">
+            <p id="section-9.1-2.2.1">Hash (<code>H</code>): SHA-512, and Nh = 64.<a href="#section-9.1-2.2.1" class="pilcrow">¶</a></p>
+<ul class="normal">
+<li class="normal" id="section-9.1-2.2.2.1">H1(m): Implemented by computing H("rho" || m), interpreting the lower
+32 bytes as a little-endian integer, and reducing the resulting integer modulo
+L = 2^252+27742317777372353535851937790883648493.<a href="#section-9.1-2.2.2.1" class="pilcrow">¶</a>
+</li>
+              <li class="normal" id="section-9.1-2.2.2.2">H2(m): Implemented by computing H(m), interpreting the lower 32 bytes
+as a little-endian integer, and reducing the resulting integer modulo
+L = 2^252+27742317777372353535851937790883648493.<a href="#section-9.1-2.2.2.2" class="pilcrow">¶</a>
+</li>
+              <li class="normal" id="section-9.1-2.2.2.3">H3(m): Implemented as an alias for H, i.e., H(m).<a href="#section-9.1-2.2.2.3" class="pilcrow">¶</a>
+</li>
+            </ul>
+</li>
+        </ul>
+<p id="section-9.1-3">Normally H2 would also include a domain separator, but for backwards compatibility
+with <span>[<a href="#RFC8032" class="xref">RFC8032</a>]</span>, it is omitted.<a href="#section-9.1-3" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="recommended-suite">
+<section id="section-9.2">
+        <h3 id="name-frostristretto255-sha-512">
+<a href="#section-9.2" class="section-number selfRef">9.2. </a><a href="#name-frostristretto255-sha-512" class="section-name selfRef">FROST(ristretto255, SHA-512)</a>
+        </h3>
+<p id="section-9.2-1">This ciphersuite uses ristretto255 for the Group and SHA-512 for the Hash function <code>H</code>.
+The value of the contextString parameter is "FROST-RISTRETTO255-SHA512".<a href="#section-9.2-1" class="pilcrow">¶</a></p>
+<ul class="normal">
+<li class="normal" id="section-9.2-2.1">
+            <p id="section-9.2-2.1.1">Group: ristretto255 <span>[<a href="#RISTRETTO" class="xref">RISTRETTO</a>]</span><a href="#section-9.2-2.1.1" class="pilcrow">¶</a></p>
+<ul class="normal">
+<li class="normal" id="section-9.2-2.1.2.1">SerializeElement: Implemented using the 'Encode' function from <span>[<a href="#RISTRETTO" class="xref">RISTRETTO</a>]</span>.<a href="#section-9.2-2.1.2.1" class="pilcrow">¶</a>
+</li>
+              <li class="normal" id="section-9.2-2.1.2.2">DeserializElement: Implemented using the 'Decode' function from <span>[<a href="#RISTRETTO" class="xref">RISTRETTO</a>]</span>.<a href="#section-9.2-2.1.2.2" class="pilcrow">¶</a>
+</li>
+            </ul>
+</li>
+          <li class="normal" id="section-9.2-2.2">
+            <p id="section-9.2-2.2.1">Hash (<code>H</code>): SHA-512, and Nh = 64.<a href="#section-9.2-2.2.1" class="pilcrow">¶</a></p>
+<ul class="normal">
+<li class="normal" id="section-9.2-2.2.2.1">H1(m): Implemented by computing H(contextString || "rho" || m) and mapping the
+the output to a Scalar as described in <span>[<a href="#RISTRETTO" class="xref">RISTRETTO</a>], <a href="https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-ristretto255-decaf448-01#section-4.4" class="relref">Section 4.4</a></span>.<a href="#section-9.2-2.2.2.1" class="pilcrow">¶</a>
+</li>
+              <li class="normal" id="section-9.2-2.2.2.2">H2(m): Implemented by computing H(contextString || "chal" || m) and mapping the
+the output to a Scalar as described in <span>[<a href="#RISTRETTO" class="xref">RISTRETTO</a>], <a href="https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-ristretto255-decaf448-01#section-4.4" class="relref">Section 4.4</a></span>.<a href="#section-9.2-2.2.2.2" class="pilcrow">¶</a>
+</li>
+              <li class="normal" id="section-9.2-2.2.2.3">H3(m): Implemented as an alias for H, i.e., H(m).<a href="#section-9.2-2.2.2.3" class="pilcrow">¶</a>
+</li>
+            </ul>
 </li>
         </ul>
 </section>
 </div>
 <div id="frostp-256-sha-256">
-<section id="section-9.2">
+<section id="section-9.3">
         <h3 id="name-frostp-256-sha-256">
-<a href="#section-9.2" class="section-number selfRef">9.2. </a><a href="#name-frostp-256-sha-256" class="section-name selfRef">FROST(P-256, SHA-256)</a>
+<a href="#section-9.3" class="section-number selfRef">9.3. </a><a href="#name-frostp-256-sha-256" class="section-name selfRef">FROST(P-256, SHA-256)</a>
         </h3>
-<p id="section-9.2-1">This ciphersuite uses P-256 for the Group and SHA-256 for the Hash function <code>H</code>.
-The value of the contextString parameter is "FROST-P256-SHA256".<a href="#section-9.2-1" class="pilcrow">¶</a></p>
+<p id="section-9.3-1">This ciphersuite uses P-256 for the Group and SHA-256 for the Hash function <code>H</code>.
+The value of the contextString parameter is "FROST-P256-SHA256".<a href="#section-9.3-1" class="pilcrow">¶</a></p>
 <ul class="normal">
-<li class="normal" id="section-9.2-2.1">
-            <p id="section-9.2-2.1.1">Group: P-256 (secp256r1) <span>[<a href="#x9.62" class="xref">x9.62</a>]</span><a href="#section-9.2-2.1.1" class="pilcrow">¶</a></p>
+<li class="normal" id="section-9.3-2.1">
+            <p id="section-9.3-2.1.1">Group: P-256 (secp256r1) <span>[<a href="#x9.62" class="xref">x9.62</a>]</span><a href="#section-9.3-2.1.1" class="pilcrow">¶</a></p>
 <ul class="normal">
-<li class="normal" id="section-9.2-2.1.2.1">HashToScalar(): Use hash_to_field from <span>[<a href="#I-D.irtf-cfrg-hash-to-curve" class="xref">I-D.irtf-cfrg-hash-to-curve</a>]</span>
-using L = 48, <code>expand_message_xmd</code> with SHA-256,
-DST = "HashToScalar-" || contextString, and
-prime modulus equal to <code>Order()</code>.<a href="#section-9.2-2.1.2.1" class="pilcrow">¶</a>
+<li class="normal" id="section-9.3-2.1.2.1">SerializeElement: Implemented using the compressed Elliptic-Curve-Point-to-Octet-String
+method according to <span>[<a href="#SECG" class="xref">SECG</a>]</span>.<a href="#section-9.3-2.1.2.1" class="pilcrow">¶</a>
 </li>
-              <li class="normal" id="section-9.2-2.1.2.2">Serialization: Elements are serialized as Ne = 33 byte string<a href="#section-9.2-2.1.2.2" class="pilcrow">¶</a>
+              <li class="normal" id="section-9.3-2.1.2.2">DeserializeElement: Implemented by attempting to deserialize a public key using
+the compressed Octet-String-to-Elliptic-Curve-Point method according to <span>[<a href="#SECG" class="xref">SECG</a>]</span>,
+and then performs partial public-key validation as defined in section 5.6.2.3.4 of
+<span>[<a href="#KEYAGREEMENT" class="xref">KEYAGREEMENT</a>]</span>.<a href="#section-9.3-2.1.2.2" class="pilcrow">¶</a>
+</li>
+              <li class="normal" id="section-9.3-2.1.2.3">Serialization: Elements are serialized as Ne = 33 byte string<a href="#section-9.3-2.1.2.3" class="pilcrow">¶</a>
 </li>
             </ul>
 </li>
-          <li class="normal" id="section-9.2-2.2">Hash (<code>H</code>): SHA-256, and Nh = 32.<a href="#section-9.2-2.2" class="pilcrow">¶</a>
+          <li class="normal" id="section-9.3-2.2">
+            <p id="section-9.3-2.2.1">Hash (<code>H</code>): SHA-256, and Nh = 32.<a href="#section-9.3-2.2.1" class="pilcrow">¶</a></p>
+<ul class="normal">
+<li class="normal" id="section-9.3-2.2.2.1">H1(m): Implemented using hash_to_field from <span>[<a href="#HASH-TO-CURVE" class="xref">HASH-TO-CURVE</a>], <a href="https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-hash-to-curve-13#section-5.3" class="relref">Section 5.3</a></span>
+using L = 48, <code>expand_message_xmd</code> with SHA-256, DST = contextString || "rho", and
+prime modulus equal to <code>Order()</code>.<a href="#section-9.3-2.2.2.1" class="pilcrow">¶</a>
+</li>
+              <li class="normal" id="section-9.3-2.2.2.2">H2(m): Implemented using hash_to_field from <span>[<a href="#HASH-TO-CURVE" class="xref">HASH-TO-CURVE</a>], <a href="https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-hash-to-curve-13#section-5.3" class="relref">Section 5.3</a></span>
+using L = 48, <code>expand_message_xmd</code> with SHA-256, DST = contextString || "chal", and
+prime modulus equal to <code>Order()</code>.<a href="#section-9.3-2.2.2.2" class="pilcrow">¶</a>
+</li>
+              <li class="normal" id="section-9.3-2.2.2.3">H3(m): Implemented as an alias for H, i.e., H(m).<a href="#section-9.3-2.2.2.3" class="pilcrow">¶</a>
+</li>
+            </ul>
 </li>
         </ul>
 </section>
@@ -2169,9 +2211,13 @@ can be identified and excluded.<a href="#section-11-3" class="pilcrow">¶</a></p
 <a href="#section-13.1" class="section-number selfRef">13.1. </a><a href="#name-normative-references" class="section-name selfRef">Normative References</a>
         </h3>
 <dl class="references">
-<dt id="I-D.irtf-cfrg-hash-to-curve">[I-D.irtf-cfrg-hash-to-curve]</dt>
+<dt id="HASH-TO-CURVE">[HASH-TO-CURVE]</dt>
         <dd>
 <span class="refAuthor">Faz-Hernandez, A.</span>, <span class="refAuthor">Scott, S.</span>, <span class="refAuthor">Sullivan, N.</span>, <span class="refAuthor">Wahby, R. S.</span>, and <span class="refAuthor">C. A. Wood</span>, <span class="refTitle">"Hashing to Elliptic Curves"</span>, <span class="refContent">Work in Progress</span>, <span class="seriesInfo">Internet-Draft, draft-irtf-cfrg-hash-to-curve-13</span>, <time datetime="2021-11-10" class="refDate">10 November 2021</time>, <span>&lt;<a href="https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-hash-to-curve-13">https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-hash-to-curve-13</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="KEYAGREEMENT">[KEYAGREEMENT]</dt>
+        <dd>
+<span class="refAuthor">Barker, E.</span>, <span class="refAuthor">Chen, L.</span>, <span class="refAuthor">Roginsky, A.</span>, <span class="refAuthor">Vassilev, A.</span>, and <span class="refAuthor">R. Davis</span>, <span class="refTitle">"Recommendation for pair-wise key-establishment schemes using discrete logarithm cryptography"</span>, <span class="seriesInfo">National Institute of Standards and Technology report</span>, <span class="seriesInfo">DOI 10.6028/nist.sp.800-56ar3</span>, <time datetime="2018-04" class="refDate">April 2018</time>, <span>&lt;<a href="https://doi.org/10.6028/nist.sp.800-56ar3">https://doi.org/10.6028/nist.sp.800-56ar3</a>&gt;</span>. </dd>
 <dd class="break"></dd>
 <dt id="RFC2119">[RFC2119]</dt>
         <dd>
@@ -2183,7 +2229,7 @@ can be identified and excluded.<a href="#section-11-3" class="pilcrow">¶</a></p
 <dd class="break"></dd>
 <dt id="RFC8032">[RFC8032]</dt>
         <dd>
-<span class="refTitle">"*** BROKEN REFERENCE ***"</span>. </dd>
+<span class="refAuthor">Josefsson, S.</span> and <span class="refAuthor">I. Liusvaara</span>, <span class="refTitle">"Edwards-Curve Digital Signature Algorithm (EdDSA)"</span>, <span class="seriesInfo">RFC 8032</span>, <span class="seriesInfo">DOI 10.17487/RFC8032</span>, <time datetime="2017-01" class="refDate">January 2017</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc8032">https://www.rfc-editor.org/rfc/rfc8032</a>&gt;</span>. </dd>
 <dd class="break"></dd>
 <dt id="RFC8174">[RFC8174]</dt>
         <dd>
@@ -2192,6 +2238,10 @@ can be identified and excluded.<a href="#section-11-3" class="pilcrow">¶</a></p
 <dt id="RISTRETTO">[RISTRETTO]</dt>
         <dd>
 <span class="refAuthor">Valence, H. D.</span>, <span class="refAuthor">Grigg, J.</span>, <span class="refAuthor">Tankersley, G.</span>, <span class="refAuthor">Valsorda, F.</span>, <span class="refAuthor">Lovecruft, I.</span>, and <span class="refAuthor">M. Hamburg</span>, <span class="refTitle">"The ristretto255 and decaf448 Groups"</span>, <span class="refContent">Work in Progress</span>, <span class="seriesInfo">Internet-Draft, draft-irtf-cfrg-ristretto255-decaf448-01</span>, <time datetime="2021-08-04" class="refDate">4 August 2021</time>, <span>&lt;<a href="https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-ristretto255-decaf448-01">https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-ristretto255-decaf448-01</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="SECG">[SECG]</dt>
+        <dd>
+<span class="refTitle">"Elliptic Curve Cryptography, Standards for Efficient Cryptography Group, ver. 2"</span>, <time datetime="2009" class="refDate">2009</time>, <span>&lt;<a href="https://secg.org/sec1-v2.pdf">https://secg.org/sec1-v2.pdf</a>&gt;</span>. </dd>
 <dd class="break"></dd>
 <dt id="x9.62">[x9.62]</dt>
       <dd>
