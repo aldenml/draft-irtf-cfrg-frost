@@ -5,12 +5,12 @@
 CFRG                                                         D. Connolly
 Internet-Draft                                          Zcash Foundation
 Intended status: Informational                                  C. Komlo
-Expires: 5 August 2022          University of Waterloo, Zcash Foundation
+Expires: 7 August 2022          University of Waterloo, Zcash Foundation
                                                              I. Goldberg
                                                   University of Waterloo
                                                                C.A. Wood
                                                               Cloudflare
-                                                         1 February 2022
+                                                         3 February 2022
 
 
                Two-Round Threshold Signatures with FROST
@@ -55,7 +55,7 @@ Status of This Memo
    time.  It is inappropriate to use Internet-Drafts as reference
    material or to cite them other than as "work in progress."
 
-   This Internet-Draft will expire on 5 August 2022.
+   This Internet-Draft will expire on 7 August 2022.
 
 Copyright Notice
 
@@ -656,7 +656,8 @@ Table of Contents
   def sign(index, sk, group_public_key, nonce, comm, msg, commitment_list, participant_list):
     # Compute the blinding factor
     encoded_commitments = encode_group_commitment_list(commitment_list)
-    blinding_factor = H1(encoded_commitments)
+    msg_hash = H3(msg)
+    blinding_factor = H1(encoded_commitments || msg_hash)
 
     # Compute the group commitment
     R = G.Identity()
