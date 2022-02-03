@@ -519,10 +519,10 @@ Table of Contents
 
   def encode_group_commitment_list(commitment_list):
     encoded_group_commitment = nil
-    for (index, hiding_nonce_commitment, blinding_nonce_commitment) in commitment_list:
+    for (index, hiding_nonce_commitment, binding_nonce_commitment) in commitment_list:
       encoded_commitment = I2OSP(index, 2) ||
                            G.SerializeElement(hiding_nonce_commitment) ||
-                           G.SerializeElement(blinding_nonce_commitment)
+                           G.SerializeElement(binding_nonce_commitment)
       encoded_group_commitment = encoded_group_commitment || encoded_commitment
     return encoded_group_commitment
 
@@ -582,8 +582,8 @@ Table of Contents
    values, and a commitment is a pair of Element values.
 
    Each signer in round one generates a nonce nonce = (hiding_nonce,
-   blinding_nonce) and commitment comm = (hiding_nonce_commitment,
-   blinding_nonce_commitment).
+   binding_nonce) and commitment comm = (hiding_nonce_commitment,
+   binding_nonce_commitment).
 
     Inputs: None
 
@@ -591,11 +591,11 @@ Table of Contents
 
     def commit():
       hiding_nonce = G.RandomScalar()
-      blinding_nonce = G.RandomScalar()
+      binding_nonce = G.RandomScalar()
       hiding_nonce_commitment = G.ScalarBaseMult(hiding_nonce)
-      blinding_nonce_commitment = G.ScalarBaseMult(blinding_nonce)
-      nonce = (hiding_nonce, blinding_nonce)
-      comm = (hiding_nonce_commitment, blinding_nonce_commitment)
+      binding_nonce_commitment = G.ScalarBaseMult(binding_nonce)
+      nonce = (hiding_nonce, binding_nonce)
+      comm = (hiding_nonce_commitment, binding_nonce_commitment)
       return (nonce, comm)
 
    The private output nonce from Participant P_i is stored locally and
@@ -634,15 +634,15 @@ Table of Contents
            are Scalar and Element values respectively.
 
   def sign(index, sk, group_public_key, nonce, comm, msg, commitment_list, participant_list):
-    # Compute the blinding factor
+    # Compute the binding factor
     encoded_commitments = encode_group_commitment_list(commitment_list)
     msg_hash = H3(msg)
-    blinding_factor = H1(encoded_commitments || msg_hash)
+    binding_factor = H1(encoded_commitments || msg_hash)
 
     # Compute the group commitment
     R = G.Identity()
-    for (_, hiding_nonce_commitment, blinding_nonce_commitment) in commitment_list:
-      R = R + (hiding_nonce_commitment + (blinding_nonce_commitment * blinding_factor))
+    for (_, hiding_nonce_commitment, binding_nonce_commitment) in commitment_list:
+      R = R + (hiding_nonce_commitment + (binding_nonce_commitment * binding_factor))
 
     lambda_i = derive_lagrange_coefficient(index, participant_list)
 
@@ -654,12 +654,12 @@ Table of Contents
     c = H2(challenge_input)
 
     # Compute the signature share
-    (hiding_nonce, blinding_nonce) = nonce_i
-    sig_share = hiding_nonce + (blinding_nonce * blinding_factor) + (lambda_i * sk_i * c)
+    (hiding_nonce, binding_nonce) = nonce_i
+    sig_share = hiding_nonce + (binding_nonce * binding_factor) + (lambda_i * sk_i * c)
 
     # Compute the commitment share
-    (hiding_nonce_commitment, blinding_nonce_commitment) = comm_i
-    comm_share = hiding_nonce_commitment + (blinding_nonce_commitment * blinding_factor)
+    (hiding_nonce_commitment, binding_nonce_commitment) = comm_i
+    comm_share = hiding_nonce_commitment + (binding_nonce_commitment * binding_factor)
 
     return sig_share, comm_share
 
@@ -1171,7 +1171,7 @@ C.1.  Signing Commitment
    D  The commitment hiding factor encoded as a serialized group
       element.
 
-   E  The commitment blinding factor encoded as a serialized group
+   E  The commitment binding factor encoded as a serialized group
       element.
 
 C.2.  Signing Packages
